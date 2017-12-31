@@ -2,12 +2,14 @@ const { URL } = require('url');
 const https = require('https');
 const http = require('http');
 
-var xbtLast = '...';
-var xbtLow = '...';
-var xbtHigh = '...';
-var bchLast = '...';
-var bchLow = '...';
-var bchHigh = '...';
+var prices = {
+    'xbtLast': '...',
+    'xbtLow': '...',
+    'xbtHigh': '...',
+    'bchLast': '...',
+    'bchLow': '...',
+    'bchHigh': '...'
+}
 
 function getText(){
 
@@ -66,15 +68,15 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="xbt-last">${xbtLast}</span> 
+    <span class="last" id="xbt-last">${prices.xbtLast}</span> 
     </div>
     <div>
     <span>Low: </span>
-    <span id="xbt-low">${xbtLow}</span> 
+    <span id="xbt-low">${prices.xbtLow}</span> 
     </div>
     <div>
     <span>High: </span>
-    <span id="xbt-high">${xbtHigh}</span> 
+    <span id="xbt-high">${prices.xbtHigh}</span> 
     </div>
     </section>
     
@@ -84,15 +86,15 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="bch-last">${bchLast}</span> 
+    <span class="last" id="bch-last">${prices.bchLast}</span> 
     </div>
     <div>
     <span>Low: </span>
-    <span id="bch-low">${bchLow}</span> 
+    <span id="bch-low">${prices.bchLow}</span> 
     </div>
     <div>
     <span>High: </span>
-    <span id="bch-high">${bchHigh}</span> 
+    <span id="bch-high">${prices.bchHigh}</span> 
     </div>
     </section>
     
@@ -122,9 +124,9 @@ function updateVals(){
         res.on('end', () => {
             try {
                 const parsedData = JSON.parse(rawData);
-                xbtLast = parsedData.last;
-                xbtLow = parsedData.low;
-                xbtHigh = parsedData.high;
+                prices.xbtLast = parsedData.last;
+                prices.xbtLow = parsedData.low;
+                prices.xbtHigh = parsedData.high;
             } catch (e) {
                 console.error(e.message);
             }
@@ -139,9 +141,10 @@ function updateVals(){
         res.on('end', () => {
             try {
                 const parsedData = JSON.parse(rawData);
-                bchLast = parsedData.last;
-                bchLow = parsedData.low;
-                bchHigh = parsedData.high;
+                prices.bchLast = parsedData.last;
+                prices.bchLow = parsedData.low;
+                // prices.bchHigh = parsedData.high;
+                prices.bchHigh = Date.now();
             } catch (e) {
                 console.error(e.message);
             }
@@ -154,11 +157,19 @@ function updateVals(){
 // Set a timeout to automatically update the prices ready to send to users.
 let inty = setInterval(updateVals, 5000);
 
+// Update values initially
+updateVals();
+
 var server = http.createServer(handleRequest);
 server.listen(8080);
 
 console.log('Server started on port 8080');
 
 function handleRequest(req, res) {
+    //Create a basic route for client js to be able to get prices
+    if(req.url === '/current'){
+        res.end(JSON.stringify(prices))
+    }
+
     res.end(getText());
 }
