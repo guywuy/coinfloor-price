@@ -97,6 +97,31 @@ function getText(){
     <span id="bch-high">${prices.bchHigh}</span> 
     </div>
     </section>
+    <script>
+
+    function updatePrices(){
+        document.querySelector('#xbt-last').innerHTML = '...';
+        document.querySelector('#xbt-high').innerHTML = '...';
+        document.querySelector('#xbt-low').innerHTML = '...';
+        document.querySelector('#bch-last').innerHTML = '...';
+        document.querySelector('#bch-high').innerHTML = '...';
+        document.querySelector('#bch-low').innerHTML = '...';
+
+        fetch('/current').then(response => response.json())
+        .then( contents => {
+            document.querySelector('#xbt-last').innerHTML = Math.floor(Number(contents.xbtLast));
+            document.querySelector('#xbt-high').innerHTML = Math.floor(Number(contents.xbtHigh));
+            document.querySelector('#xbt-low').innerHTML = Math.floor(Number(contents.xbtLow));
+            document.querySelector('#bch-last').innerHTML = Math.floor(Number(contents.bchLast));
+            document.querySelector('#bch-high').innerHTML = Math.floor(Number(contents.bchHigh));
+            document.querySelector('#bch-low').innerHTML = Math.floor(Number(contents.bchLow));
+        })
+        .catch(() => console.log("Oops! Can't get current prices"));
+                
+    }
+    let inty = setInterval(updatePrices, 5000);
+
+</script>
     
     </body>
     </html>
@@ -143,8 +168,7 @@ function updateVals(){
                 const parsedData = JSON.parse(rawData);
                 prices.bchLast = parsedData.last;
                 prices.bchLow = parsedData.low;
-                // prices.bchHigh = parsedData.high;
-                prices.bchHigh = Date.now();
+                prices.bchHigh = parsedData.high;
             } catch (e) {
                 console.error(e.message);
             }

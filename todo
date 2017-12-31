@@ -1,6 +1,3 @@
-Get price vals via front end ajax fetch automatically.
-
-
 Add service worker to automatically poll for price (even when user has closed tab)
 
 Add ability to send push notification. - dependent on price. 

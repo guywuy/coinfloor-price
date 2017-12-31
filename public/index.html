@@ -83,5 +83,32 @@
         </div>
     </section>
 
+    <script>
+
+    function updatePrices(){
+        document.querySelector('#xbt-last').innerHTML = '...';
+        document.querySelector('#xbt-high').innerHTML = '...';
+        document.querySelector('#xbt-low').innerHTML = '...';
+        document.querySelector('#bch-last').innerHTML = '...';
+        document.querySelector('#bch-high').innerHTML = '...';
+        document.querySelector('#bch-low').innerHTML = '...';
+
+        fetch('/current').then(response => response.json())
+        .then( contents => {
+            console.log(contents);
+            document.querySelector('#xbt-last').innerHTML = Math.floor(Number(contents.xbtLast));
+            document.querySelector('#xbt-high').innerHTML = Math.floor(Number(contents.xbtHigh));
+            document.querySelector('#xbt-low').innerHTML = Math.floor(Number(contents.xbtLow));
+            document.querySelector('#bch-last').innerHTML = Math.floor(Number(contents.bchLast));
+            document.querySelector('#bch-high').innerHTML = Math.floor(Number(contents.bchHigh));
+            document.querySelector('#bch-low').innerHTML = Math.floor(Number(contents.bchLow));
+        })
+        .catch(() => console.log("Oops! Can't get current prices"))
+        
+        let inty = setInterval(updatePrices, 5000);
+    }
+
+</script>
+
   </body>
 </html>
