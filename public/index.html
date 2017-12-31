@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>XBT and BTC price</title>
+    
+    <style>
+        html {
+            background: #c5c5c5;
+        }
+        body {
+            margin: 0 auto;
+            padding: 0;
+            box-sizing: border-box;
+            max-width: 600px;
+            color: rgb(231, 231, 231);
+            text-shadow: 2px 1px 1px #444;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 80px 80px;
+            grid-gap: 8px;
+            margin: 46px 0;
+        }
+        section>*{
+            padding: 20px;
+            line-height: 40px;
+            font-size: 120%;
+        }
+        section>*:nth-child(4n+1) { background: goldenrod;}
+        section>*:nth-child(4n+2) { background: dodgerblue;}
+        section>*:nth-child(4n+3) { background: tomato;}
+        section>*:nth-child(4n+4) { background: #009900;}
+
+        h2 {
+            margin: 0;
+        }
+        .last{
+            font-weight: bold;
+        }
+    </style>    
+  </head>
+
+  <body>
+    
+    <section class="xbt">
+        <div>
+            <h2>XBT</h2>
+        </div>
+        <div>
+            <span>Last: </span>
+            <span class="last" id="xbt-last">---</span> 
+        </div>
+        <div>
+            <span>Low: </span>
+            <span id="xbt-low">---</span> 
+        </div>
+        <div>
+            <span>High: </span>
+            <span id="xbt-high">---</span> 
+        </div>
+    </section>
+    
+    <section class="bch">
+        <div>
+            <h2>BCH</h2>
+        </div>
+        <div>
+            <span>Last: </span>
+            <span class="last" id="bch-last">---</span> 
+        </div>
+        <div>
+            <span>Low: </span>
+            <span id="bch-low">---</span> 
+        </div>
+        <div>
+            <span>High: </span>
+            <span id="bch-high">---</span> 
+        </div>
+    </section>
+
+  </body>
+</html>

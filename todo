@@ -1,0 +1,10 @@
+add a setinterval to poll and automatically update the text. Can't update on front end except for ajax *to same domain*
+    possible to update constantly on node server, and ajax request that?
+
+Add route to request continuously updated price values.
+Get these vals via front end ajax automatically.
+
+
+Add service worker to automatically poll for price (even when user has closed tab)
+
+Add ability to send push notification. - dependent on price. 
