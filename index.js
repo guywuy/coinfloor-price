@@ -63,6 +63,20 @@ function getText(){
         color:black;
         text-shadow: none;
     }
+    .increase:after{
+        content: '▲';
+        color: green;
+        float: right;
+        padding: 0 5% 0 0;
+        font-size: 32px;
+    }
+    .decrease:after{
+        content: '▼';
+        color: red;
+        float: right;
+        padding: 0 5% 0 0;
+        font-size: 32px;
+    }
     </style>    
     </head>
     
@@ -70,7 +84,7 @@ function getText(){
     
     <section class="xbt">
     <div>
-    <h2>XBT</h2>
+    <h2>X B T</h2>
     </div>
     <div>
     <span>Last: </span>
@@ -88,7 +102,7 @@ function getText(){
     
     <section class="bch">
     <div>
-    <h2>BCH</h2>
+    <h2>B C H</h2>
     </div>
     <div>
     <span>Last: </span>
@@ -104,19 +118,53 @@ function getText(){
     </div>
     </section>
     <p id="time">${prices.time}</p>
+
     <script>
+    let xbtPrevious = Math.floor(Number(${prices.xbtLast}));
+    let bchPrevious = Math.floor(Number(${prices.bchLast}));
+
     function updatePrices(){
 
-
         fetch('/current').then(response => response.json())
-        .then( contents => {
-            document.querySelector('#xbt-last').innerHTML = contents.xbtLast.slice(0, -3);
-            document.querySelector('#xbt-high').innerHTML = contents.xbtHigh.slice(0, -3);
-            document.querySelector('#xbt-low').innerHTML = contents.xbtLow.slice(0, -3);
-            document.querySelector('#bch-last').innerHTML = contents.bchLast.slice(0, -3);
-            document.querySelector('#bch-high').innerHTML = contents.bchHigh.slice(0, -3);
-            document.querySelector('#bch-low').innerHTML = contents.bchLow.slice(0, -3);
-            document.querySelector('#time').innerHTML = contents.time;
+        .then( prices => {
+
+            //compare xbtPrevious to prices.xbtLast
+            if(xbtPrevious > Math.floor(Number(prices.xbtLast))){
+                console.log('XBT DECREASE')
+                // Add class of decrease to xbtlast and remove increase
+                document.querySelector('#xbt-last').classList.remove('increase');
+                document.querySelector('#xbt-last').classList.add('decrease');
+            } else if (xbtPrevious < Math.floor(Number(prices.xbtLast))){
+                console.log("XBT INCREASE")
+                // Add class of decrease to xbtlast and remove increase
+                document.querySelector('#xbt-last').classList.remove('decrease');
+                document.querySelector('#xbt-last').classList.add('increase');
+            }
+            
+            xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
+
+            //compare bchPrevious to prices.bchLast
+            if(bchPrevious > Math.floor(Number(prices.bchLast))){
+                console.log('bch DECREASE')
+                // Add class of decrease to bchlast and remove increase
+                document.querySelector('#bch-last').classList.remove('increase');
+                document.querySelector('#bch-last').classList.add('decrease');
+            } else if (bchPrevious < Math.floor(Number(prices.bchLast))){
+                console.log("bch INCREASE")
+                // Add class of decrease to bchlast and remove increase
+                document.querySelector('#bch-last').classList.remove('decrease');
+                document.querySelector('#bch-last').classList.add('increase');
+            }
+            
+            bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous xbt to lastprice
+
+            document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
+            document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
+            document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
+            document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
+            document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
+            document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
+            document.querySelector('#time').innerHTML = prices.time;
         })
         .catch(() => console.log("Oops! Can't get current prices"));
                 

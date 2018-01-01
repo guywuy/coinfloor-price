@@ -42,6 +42,21 @@
         .last{
             font-weight: bold;
         }
+        .increase:after{
+            content: '&#9650;';
+            color: green;
+            float: right;
+            padding: 0 5% 0 0;
+            font-size: 32px;
+        }
+        .decrease:after{
+            content: '&#9660;';
+            color: red;
+            float: right;
+            padding: 0 5% 0 0;
+            font-size: 32px;
+        }
+        
     </style>    
   </head>
 
@@ -84,31 +99,57 @@
     </section>
 
     <script>
-
+    let xbtPrevious = Math.floor(Number(${prices.xbtLast}));
+    let bchPrevious = Math.floor(Number(${prices.bchLast}));
     function updatePrices(){
-        document.querySelector('#xbt-last').innerHTML = '...';
-        document.querySelector('#xbt-high').innerHTML = '...';
-        document.querySelector('#xbt-low').innerHTML = '...';
-        document.querySelector('#bch-last').innerHTML = '...';
-        document.querySelector('#bch-high').innerHTML = '...';
-        document.querySelector('#bch-low').innerHTML = '...';
 
         fetch('/current').then(response => response.json())
-        .then( contents => {
-            console.log(contents);
-            document.querySelector('#xbt-last').innerHTML = Math.floor(Number(contents.xbtLast));
-            document.querySelector('#xbt-high').innerHTML = Math.floor(Number(contents.xbtHigh));
-            document.querySelector('#xbt-low').innerHTML = Math.floor(Number(contents.xbtLow));
-            document.querySelector('#bch-last').innerHTML = Math.floor(Number(contents.bchLast));
-            document.querySelector('#bch-high').innerHTML = Math.floor(Number(contents.bchHigh));
-            document.querySelector('#bch-low').innerHTML = Math.floor(Number(contents.bchLow));
-        })
-        .catch(() => console.log("Oops! Can't get current prices"))
-        
-        let inty = setInterval(updatePrices, 5000);
-    }
+        .then( prices => {
 
-</script>
+            //compare xbtPrevious to prices.xbtLast
+            if(xbtPrevious > Math.floor(Number(prices.xbtLast))){
+                console.log('XBT DECREASE')
+                // Add class of decrease to xbtlast and remove increase
+                document.querySelector('#xbt-last').classList.remove('increase');
+                document.querySelector('#xbt-last').classList.add('decrease');
+            } else if (xbtPrevious < Math.floor(Number(prices.xbtLast))){
+                console.log("XBT INCREASE")
+                // Add class of decrease to xbtlast and remove increase
+                document.querySelector('#xbt-last').classList.remove('decrease');
+                document.querySelector('#xbt-last').classList.add('increase');
+            }
+            
+            xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
+            
+            //compare bchPrevious to prices.bchLast
+            if(bchPrevious > Math.floor(Number(prices.bchLast))){
+                console.log('bch DECREASE')
+                // Add class of decrease to bchlast and remove increase
+                document.querySelector('#bch-last').classList.remove('increase');
+                document.querySelector('#bch-last').classList.add('decrease');
+            } else if (bchPrevious < Math.floor(Number(prices.bchLast))){
+                console.log("bch INCREASE")
+                // Add class of decrease to bchlast and remove increase
+                document.querySelector('#bch-last').classList.remove('decrease');
+                document.querySelector('#bch-last').classList.add('increase');
+            }
+            
+            bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous xbt to lastprice
+
+            document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
+            document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
+            document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
+            document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
+            document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
+            document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
+            document.querySelector('#time').innerHTML = prices.time;
+        })
+        .catch(() => console.log("Oops! Can't get current prices"));
+                
+    }
+    let inty = setInterval(updatePrices, 7000);
+
+    </script>
 
   </body>
 </html>
