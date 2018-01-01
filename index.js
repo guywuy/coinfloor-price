@@ -8,7 +8,8 @@ var prices = {
     'xbtHigh': '...',
     'bchLast': '...',
     'bchLow': '...',
-    'bchHigh': '...'
+    'bchHigh': '...',
+    'time': Date.now()
 }
 
 function getText(){
@@ -31,7 +32,7 @@ function getText(){
         box-sizing: border-box;
         max-width: 600px;
         color: rgb(231, 231, 231);
-        text-shadow: 2px 1px 1px #444;
+        text-shadow: 1px 1px 1px #444;
         font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
     }
     section {
@@ -57,6 +58,11 @@ function getText(){
     .last{
         font-weight: bold;
     }
+    #time {
+        font-size: 12px;
+        color:black;
+        text-shadow: none;
+    }
     </style>    
     </head>
     
@@ -68,15 +74,15 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="xbt-last">${prices.xbtLast}</span> 
+    <span class="last" id="xbt-last">${prices.xbtLast.slice(0, -3)}</span> 
     </div>
     <div>
     <span>Low: </span>
-    <span id="xbt-low">${prices.xbtLow}</span> 
+    <span id="xbt-low">${prices.xbtLow.slice(0, -3)}</span> 
     </div>
     <div>
     <span>High: </span>
-    <span id="xbt-high">${prices.xbtHigh}</span> 
+    <span id="xbt-high">${prices.xbtHigh.slice(0, -3)}</span> 
     </div>
     </section>
     
@@ -86,42 +92,38 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="bch-last">${prices.bchLast}</span> 
+    <span class="last" id="bch-last">${prices.bchLast.slice(0, -3)}</span> 
     </div>
     <div>
     <span>Low: </span>
-    <span id="bch-low">${prices.bchLow}</span> 
+    <span id="bch-low">${prices.bchLow.slice(0, -3)}</span> 
     </div>
     <div>
     <span>High: </span>
-    <span id="bch-high">${prices.bchHigh}</span> 
+    <span id="bch-high">${prices.bchHigh.slice(0, -3)}</span> 
     </div>
     </section>
+    <p id="time">${prices.time}</p>
     <script>
-
     function updatePrices(){
-        document.querySelector('#xbt-last').innerHTML = '...';
-        document.querySelector('#xbt-high').innerHTML = '...';
-        document.querySelector('#xbt-low').innerHTML = '...';
-        document.querySelector('#bch-last').innerHTML = '...';
-        document.querySelector('#bch-high').innerHTML = '...';
-        document.querySelector('#bch-low').innerHTML = '...';
+
 
         fetch('/current').then(response => response.json())
         .then( contents => {
-            document.querySelector('#xbt-last').innerHTML = Math.floor(Number(contents.xbtLast));
-            document.querySelector('#xbt-high').innerHTML = Math.floor(Number(contents.xbtHigh));
-            document.querySelector('#xbt-low').innerHTML = Math.floor(Number(contents.xbtLow));
-            document.querySelector('#bch-last').innerHTML = Math.floor(Number(contents.bchLast));
-            document.querySelector('#bch-high').innerHTML = Math.floor(Number(contents.bchHigh));
-            document.querySelector('#bch-low').innerHTML = Math.floor(Number(contents.bchLow));
+            document.querySelector('#xbt-last').innerHTML = contents.xbtLast.slice(0, -3);
+            document.querySelector('#xbt-high').innerHTML = contents.xbtHigh.slice(0, -3);
+            document.querySelector('#xbt-low').innerHTML = contents.xbtLow.slice(0, -3);
+            document.querySelector('#bch-last').innerHTML = contents.bchLast.slice(0, -3);
+            document.querySelector('#bch-high').innerHTML = contents.bchHigh.slice(0, -3);
+            document.querySelector('#bch-low').innerHTML = contents.bchLow.slice(0, -3);
+            document.querySelector('#time').innerHTML = contents.time;
         })
         .catch(() => console.log("Oops! Can't get current prices"));
                 
     }
-    let inty = setInterval(updatePrices, 5000);
+    let inty = setInterval(updatePrices, 7000);
 
-</script>
+    </script>
     
     </body>
     </html>
@@ -144,6 +146,7 @@ const optionsBCH = {
 function updateVals(){
     https.get(optionsXBT, (res) => {
         res.setEncoding('utf8');
+        prices.time = res.headers.date; // Get time of response from header
         let rawData = '';
         res.on('data', (chunk) => { rawData += chunk; });
         res.on('end', () => {
@@ -179,7 +182,7 @@ function updateVals(){
 }
 
 // Set a timeout to automatically update the prices ready to send to users.
-let inty = setInterval(updateVals, 5000);
+let inty = setInterval(updateVals, 7000);
 
 // Update values initially
 updateVals();
