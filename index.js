@@ -85,18 +85,38 @@ function getText(){
         color:black;
         text-shadow: none;
     }
-    .increase:after{
-        content: '▲';
-        color: green;
+    .change {
+        font-size: 16px;
         float: right;
         padding: 0 5% 0 0;
+        vertical-align:middle;
+    }
+    .change.increase--1 {
+        color: green;
+    }
+    .change.increase--2 {
+        color: green;
+    }
+    .change.decrease--1 {
+        color: red;
+    }
+    .change.decrease--2 {
+        color: red;
+    }
+    .increase--1:before{
+        content: '▲';
         font-size: 32px;
     }
-    .decrease:after{
+    .increase--2:before{
+        content: '▲▲';
+        font-size: 32px;
+    }
+    .decrease--1:before{
         content: '▼';
-        color: red;
-        float: right;
-        padding: 0 5% 0 0;
+        font-size: 32px;
+    }
+    .decrease--2:before{
+        content: '▼▼';
         font-size: 32px;
     }
     </style>    
@@ -110,7 +130,8 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last ${prices.xbtChange}" id="xbt-last">${prices.xbtLast.slice(0, -3)}</span> 
+    <span class="last" id="xbt-last">${prices.xbtLast.slice(0, -3)}</span>
+    <span class="change" id="xbt-change"></span>
     </div>
     <div>
     <span>Low: </span>
@@ -128,7 +149,8 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last ${prices.bchChange}" id="bch-last">${prices.bchLast.slice(0, -3)}</span> 
+    <span class="last" id="bch-last">${prices.bchLast.slice(0, -3)}</span>
+    <span class="change" id="bch-change"></span>
     </div>
     <div>
     <span>Low: </span>
@@ -147,17 +169,46 @@ function getText(){
 
         fetch('/current').then(response => response.json())
         .then( prices => {
+            
             document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
+            document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
             document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
             document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
             document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
+            document.querySelector('#bch-change').innerHTML = prices.bchChange > 0 ? '+' + prices.bchChange : prices.bchChange;
             document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
             document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
             document.querySelector('#time').innerHTML = prices.time;
 
+            // Work out xbt class to add from price change
+            let xbtClassToAdd = '';
+            if (prices.xbtChange <= -40){
+                xbtClassToAdd = 'decrease--2'
+            } else if (prices.xbtChange <= -10){
+                xbtClassToAdd = 'decrease--1'
+            } else if (prices.xbtChange >= 40){
+                xbtClassToAdd = 'increase--2'
+            } else if (prices.xbtChange >= 10){
+                xbtClassToAdd = 'increase--1'
+            } 
             // Add or remove classes to reflect price change
-            document.querySelector('#xbt-last').classList.remove("increase", "decrease");
-            document.querySelector('#xbt-last').classList.add(prices.xbtChange);
+            document.querySelector('#xbt-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
+            document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
+            
+            // Work out bch class to add from price change
+            let bchClassToAdd = '';
+            if (prices.bchChange <= -40){
+                bchClassToAdd = 'decrease--2'
+            } else if (prices.bchChange <= -10){
+                bchClassToAdd = 'decrease--1'
+            } else if (prices.bchChange >= 40){
+                bchClassToAdd = 'increase--2'
+            } else if (prices.bchChange >= 10){
+                bchClassToAdd = 'increase--1'
+            } 
+            // Add or remove classes to reflect price change
+            document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
+            document.querySelector('#bch-change').classList.add(bchClassToAdd);
         })
         .catch(() => console.log("Oops! Can't get current prices"));
                 
@@ -215,6 +266,7 @@ function updateVals(){
                 console.log('xbtChanges', xbtChanges);
                 let averageChange = xbtChanges.reduce( (accum, curr) => accum + curr );
                 console.log('average xbt change', averageChange);
+                prices.xbtChange = averageChange;
                 
                 xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
 
@@ -252,6 +304,7 @@ function updateVals(){
                 console.log('bchChanges', bchChanges);
                 let averageChange = bchChanges.reduce( (accum, curr) => accum + curr );
                 console.log('average bch change', averageChange);
+                prices.bchChange = averageChange;
                 
                 bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous bch to lastprice
             } catch (e) {
