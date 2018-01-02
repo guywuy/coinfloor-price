@@ -14,7 +14,7 @@
             margin: 0 auto;
             padding: 0;
             box-sizing: border-box;
-            max-width: 600px;
+            max-width: 680px;
             color: rgb(231, 231, 231);
             text-shadow: 2px 1px 1px #444;
             font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -25,6 +25,20 @@
             grid-template-rows: 80px 80px;
             grid-gap: 8px;
             margin: 46px 0;
+        }
+        @media (max-width: 500px){
+            section>*:nth-child(4n+1) {
+                grid-column: span 2;
+            }
+            section>*:nth-child(4n+2) {
+                grid-column: span 2;
+            }
+            h2 {
+            text-align: center;
+            }
+            #time {
+                text-align: center;
+            }
         }
         section>*{
             padding: 20px;
