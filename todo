@@ -1,3 +1,5 @@
+Add logic in client js to map priceChange to className (from -100 to 100)
+
 Add service worker to automatically poll for price (even when user has closed tab)
 
 Add ability to send push notification. - dependent on price. 

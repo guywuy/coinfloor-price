@@ -9,8 +9,16 @@ var prices = {
     'bchLast': '...',
     'bchLow': '...',
     'bchHigh': '...',
+    'xbtChange': 0,
+    'bchChange': 0,
     'time': Date.now()
 }
+
+// Variables for calculating change over time
+var xbtPrevious = 0;
+var xbtChanges = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var bchPrevious = 0;
+var bchChanges = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 function getText(){
 
@@ -88,7 +96,7 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="xbt-last">${prices.xbtLast.slice(0, -3)}</span> 
+    <span class="last ${prices.xbtChange}" id="xbt-last">${prices.xbtLast.slice(0, -3)}</span> 
     </div>
     <div>
     <span>Low: </span>
@@ -106,7 +114,7 @@ function getText(){
     </div>
     <div>
     <span>Last: </span>
-    <span class="last" id="bch-last">${prices.bchLast.slice(0, -3)}</span> 
+    <span class="last ${prices.bchChange}" id="bch-last">${prices.bchLast.slice(0, -3)}</span> 
     </div>
     <div>
     <span>Low: </span>
@@ -120,44 +128,11 @@ function getText(){
     <p id="time">${prices.time}</p>
 
     <script>
-    let xbtPrevious = Math.floor(Number(${prices.xbtLast}));
-    let bchPrevious = Math.floor(Number(${prices.bchLast}));
 
     function updatePrices(){
 
         fetch('/current').then(response => response.json())
         .then( prices => {
-
-            //compare xbtPrevious to prices.xbtLast
-            if(xbtPrevious > Math.floor(Number(prices.xbtLast))){
-                console.log('XBT DECREASE')
-                // Add class of decrease to xbtlast and remove increase
-                document.querySelector('#xbt-last').classList.remove('increase');
-                document.querySelector('#xbt-last').classList.add('decrease');
-            } else if (xbtPrevious < Math.floor(Number(prices.xbtLast))){
-                console.log("XBT INCREASE")
-                // Add class of decrease to xbtlast and remove increase
-                document.querySelector('#xbt-last').classList.remove('decrease');
-                document.querySelector('#xbt-last').classList.add('increase');
-            }
-            
-            xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
-
-            //compare bchPrevious to prices.bchLast
-            if(bchPrevious > Math.floor(Number(prices.bchLast))){
-                console.log('bch DECREASE')
-                // Add class of decrease to bchlast and remove increase
-                document.querySelector('#bch-last').classList.remove('increase');
-                document.querySelector('#bch-last').classList.add('decrease');
-            } else if (bchPrevious < Math.floor(Number(prices.bchLast))){
-                console.log("bch INCREASE")
-                // Add class of decrease to bchlast and remove increase
-                document.querySelector('#bch-last').classList.remove('decrease');
-                document.querySelector('#bch-last').classList.add('increase');
-            }
-            
-            bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous xbt to lastprice
-
             document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
             document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
             document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
@@ -165,6 +140,10 @@ function getText(){
             document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
             document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
             document.querySelector('#time').innerHTML = prices.time;
+
+            // Add or remove classes to reflect price change
+            document.querySelector('#xbt-last').classList.remove("increase", "decrease");
+            document.querySelector('#xbt-last').classList.add(prices.xbtChange);
         })
         .catch(() => console.log("Oops! Can't get current prices"));
                 
@@ -177,7 +156,9 @@ function getText(){
     </html>
     `
 }
-    
+
+
+
 const optionsXBT = {
     hostname: 'webapi.coinfloor.co.uk',
     port: 8090,
@@ -192,6 +173,8 @@ const optionsBCH = {
 };
 
 function updateVals(){
+
+    // GET XBT from coinfloor api
     https.get(optionsXBT, (res) => {
         res.setEncoding('utf8');
         prices.time = res.headers.date; // Get time of response from header
@@ -203,6 +186,24 @@ function updateVals(){
                 prices.xbtLast = parsedData.last;
                 prices.xbtLow = parsedData.low;
                 prices.xbtHigh = parsedData.high;
+
+                // make sure initial value of xbt is set
+                if (xbtPrevious == 0) {
+                    xbtPrevious = Math.floor(Number(prices.xbtLast));
+                }
+
+                // work out change from previous value
+                let xbtLastChange = Math.floor(Number(prices.xbtLast)) - xbtPrevious;
+                // add change to array of price changes.
+                xbtChanges.shift(); //remove first element
+                xbtChanges.push(xbtLastChange);
+                // work out average change over last few changes.
+                console.log('xbtChanges', xbtChanges);
+                let averageChange = xbtChanges.reduce( (accum, curr) => accum + curr );
+                console.log('average xbt change', averageChange);
+                
+                xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
+
             } catch (e) {
                 console.error(e.message);
             }
@@ -210,6 +211,8 @@ function updateVals(){
     }).on('error', (e) => {
         console.error(e);
     });
+
+    // GET BCH from coinfloor api
     https.get(optionsBCH, (res) => {
         res.setEncoding('utf8');
         let rawData = '';
@@ -220,6 +223,23 @@ function updateVals(){
                 prices.bchLast = parsedData.last;
                 prices.bchLow = parsedData.low;
                 prices.bchHigh = parsedData.high;
+
+                // make sure initial value of xbt is set
+                if (bchPrevious == 0) {
+                    bchPrevious = Math.floor(Number(prices.bchLast));
+                }
+
+                // work out change from previous value
+                let bchLastChange = Math.floor(Number(prices.bchLast)) - bchPrevious;
+                // add change to array of price changes.
+                bchChanges.shift(); //remove first element
+                bchChanges.push(bchLastChange);
+                // work out average change over last few changes.
+                console.log('bchChanges', bchChanges);
+                let averageChange = bchChanges.reduce( (accum, curr) => accum + curr );
+                console.log('average bch change', averageChange);
+                
+                bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous bch to lastprice
             } catch (e) {
                 console.error(e.message);
             }
