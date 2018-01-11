@@ -331,11 +331,11 @@
                 } 
                 // Add or remove classes to reflect price change
                 document.querySelector('#xbt-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-                document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
-                
-                // Also add / remove class from html
                 document.querySelector('html').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-                document.querySelector('html').classList.add(xbtClassToAdd);
+                if (xbtClassToAdd.length>0){
+                    document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
+                    document.querySelector('html').classList.add(xbtClassToAdd);
+                }
                 
 
                 // Work out bch class to add from price change
@@ -351,7 +351,9 @@
                 } 
                 // Add or remove classes to reflect price change
                 document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-                document.querySelector('#bch-change').classList.add(bchClassToAdd);
+                if (bchClassToAdd.length>0){
+                    document.querySelector('#bch-change').classList.add(bchClassToAdd);
+                }
             })
             .catch((err) => console.log(err));
                     
