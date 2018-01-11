@@ -10,5 +10,6 @@
   "author": "guywuy",
   "license": "ISC",
   "dependencies": {
+    "ejs": "^2.5.7"
   }
 }
