@@ -167,12 +167,95 @@
     </section>
     <p id="time"><%- prices.time  %></p>
 
+    <form class="target-form" id="max-target">
+        <label>Let me know if the price goes above</label>
+        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))+200  %>' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+    
+    <form class="target-form" id="min-target">
+        <label>Let me know if the price goes below</label>
+        <input type='number' value='5' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+
+
     <script>
+
+        // Register the service worker.
+        if (!(navigator.serviceWorker)) {
+            console.log("Sorry, no service worker support in your browser");
+        } else {
+            navigator.serviceWorker.register('/sw.js')
+            .then( reg => {
+                console.log('service worker registered');
+            });
+        };
+
+        const vapidPublicKey = 'BCWQthp74GCgHRnPB7xv7XWP7XuZ-wkt2JG7DnYfN_68iqO69-UfBVYlSiXSL9gbOWHLzslEf2-_b7LFfBZWFEc';
+        const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        // When subscription is clicked, check notification permission and request it if not granted.
+        // Then subscribe user and POST subscription and target via fetch
+        document.querySelectorAll('.target-form').forEach( form => {
+            form.addEventListener('submit', function(ev){
+                ev.preventDefault();
+
+                // Determine which form we are interested in
+                let operator = ev.target.id == 'max-target' ? 'gt' : 'lt';
+
+                // Get user permission for push notifications.
+                if(!('Notification' in window)) {
+                    console.log("This browser does not support notifications");
+                }
+                // request permission to show notifications
+                Notification.requestPermission( status => {
+                    console.log("Notification permission status: " + status);
+                });
+
+                let target = this.targetValue.value;
+
+                navigator.serviceWorker.ready.then( registration => {
+                    registration.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: convertedVapidKey
+                    })
+                    .then( subscription => {
+                        let postbody = JSON.stringify({
+                            subscription: subscription.toJSON(),
+                            target,
+                            operator: operator
+                        });
+                        fetch('/subscribe', {
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            method: 'post',
+                            body: postbody
+                        })
+                        .then(function(res){ 
+                            console.log(ev.target.id)
+                            updateUISuccess(ev.target.id, target);
+                            console.log(res);
+                        })
+                        .catch(function(res){ console.log(res) })
+                    });
+                })
+            })
+        })
+
+        function updateUISuccess(id, value){
+            document.querySelector(`#${id}`).innerHTML = `Thanks, you will be notified if the price goes ${id=='max-target' ? 'above' : 'below'} ${value}`;
+        }
+
 
         function updatePrices(){
 
             fetch('/current').then(response => response.json())
             .then( prices => {
+
+                console.log(prices);
                 
                 document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
                 document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
@@ -223,6 +306,26 @@
                     
         }
         let inty = setInterval(updatePrices, 8000);
+
+
+
+
+
+        // Convert and include  public vapid key
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding)
+            .replace(/\-/g, '+')
+            .replace(/_/g, '/');
+        
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+        
+            for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
 
     </script>
 

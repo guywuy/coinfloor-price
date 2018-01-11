@@ -5,12 +5,17 @@ const ejs = require('ejs');
 const fs = require('fs');
 const express = require('express');
 const app = express();
+const bodyParser = require('body-parser');
+const webpush = require('web-push');
+
+
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
 
 app.use(express.static('./'));
 
+app.use(bodyParser.json());
 
 
 var prices = {
@@ -121,7 +126,10 @@ function updateVals(){
 }
 
 // Set a timeout to automatically update the prices ready to send to users.
-let inty = setInterval(updateVals, 8000);
+let inty = setInterval(() => {
+    updateVals();
+    checkSubscriptions();
+}, 8000);
 
 // Update values initially
 updateVals();
@@ -139,5 +147,163 @@ app.get('/current', (req, res) => {
     res.end(JSON.stringify(prices))    
 })
 
+const vapidPublicKey = 'BCWQthp74GCgHRnPB7xv7XWP7XuZ-wkt2JG7DnYfN_68iqO69-UfBVYlSiXSL9gbOWHLzslEf2-_b7LFfBZWFEc';
+const vapidPrivateKey = 'Vl_FNpk5zxPu1CawJ-IMxdPhvUWbYB7TXOzMEOdiyYY';
+
+var subscriptions = [];
+
+// If there are any subscriptions, check whether the current price satisfies the target.
+// If it does, send a push notification and remove the subscription.
+function checkSubscriptions(){
+    console.log('checking subscriptions. subscriptions length is: ' + subscriptions.length)
+    if(subscriptions.length<1) return;
+    let xbtPrice = prices.xbtLast;
+
+    subscriptions.forEach( (sub, i) => {
+        if (sub.operator == 'gt'){
+            if (xbtPrice > sub.target){
+                console.log('High target matched.');
+                let message =  JSON.stringify({
+                    'xbtPrice': xbtPrice,
+                    'operator' : sub.operator,
+                    'target' : sub.target
+                });
+                
+                const options = {
+                    TTL: 60,
+                    vapidDetails: {
+                        subject: 'mailto: pushyman@mailinator.com',
+                        publicKey: vapidPublicKey,
+                        privateKey: vapidPrivateKey
+                    }
+                }
+                
+                webpush.sendNotification(
+                    sub.subscription,
+                    message,
+                    options
+                ).then( resp => {
+                    console.log('Push notification sent, removing subscription with target: ' + sub.target);
+                    removeSubscription(i);
+                }).catch( err => {
+                    console.log('Error sending push from server, removing subscription.', err)
+                    removeSubscription(i);
+                })
+            }
+        } else {
+            if (xbtPrice < sub.target){
+                console.log('Low target matched');
+                let message =  JSON.stringify({
+                    'xbtPrice': xbtPrice,
+                    'operator' : sub.operator,
+                    'target' : sub.target
+                });
+                
+                const options = {
+                    TTL: 60,
+                    vapidDetails: {
+                        subject: 'mailto: pushyman@mailinator.com',
+                        publicKey: vapidPublicKey,
+                        privateKey: vapidPrivateKey
+                    }
+                }
+                
+                webpush.sendNotification(
+                    sub.subscription,
+                    message,
+                    options
+                ).then( resp => {
+                    console.log('Push notification sent, removing subscription with target: ' + sub.target);
+                    removeSubscription(i);
+                }).catch( err => {
+                    console.log(err)
+                })
+            }
+        }
+    })
+}
+
+
+// let inter = setInterval( function(){
+//     let xbtPrice = prices.xbtLast;
+    
+//     if(subscriptions.length<1) return;
+
+//     subscriptions.forEach( (sub, i) => {
+//         if (sub.operator == 'gt'){
+//             if (xbtPrice > sub.target){
+//                 console.log('High target matched.');
+//                 let message =  JSON.stringify({
+//                     'xbtPrice': xbtPrice,
+//                     'operator' : sub.operator,
+//                     'target' : sub.target
+//                 });
+                
+//                 const options = {
+//                     TTL: 60,
+//                     vapidDetails: {
+//                         subject: 'mailto: pushyman@mailinator.com',
+//                         publicKey: vapidPublicKey,
+//                         privateKey: vapidPrivateKey
+//                     }
+//                 }
+                
+//                 webpush.sendNotification(
+//                     sub.subscription,
+//                     message,
+//                     options
+//                 ).then( resp => {
+//                     console.log('Push notification sent, removing subscription with target: ' + sub.target);
+//                     removeSubscription(i);
+//                 }).catch( err => {
+//                     console.log('Error sending push from server, removing subscription.', err)
+//                     removeSubscription(i);
+//                 })
+//             }
+//         } else {
+//             if (xbtPrice < sub.target){
+//                 console.log('Low target matched');
+//                 let message =  JSON.stringify({
+//                     'xbtPrice': xbtPrice,
+//                     'operator' : sub.operator,
+//                     'target' : sub.target
+//                 });
+                
+//                 const options = {
+//                     TTL: 60,
+//                     vapidDetails: {
+//                         subject: 'mailto: pushyman@mailinator.com',
+//                         publicKey: vapidPublicKey,
+//                         privateKey: vapidPrivateKey
+//                     }
+//                 }
+                
+//                 webpush.sendNotification(
+//                     sub.subscription,
+//                     message,
+//                     options
+//                 ).then( resp => {
+//                     console.log('Push notification sent, removing subscription with target: ' + sub.target);
+//                     removeSubscription(i);
+//                 }).catch( err => {
+//                     console.log(err)
+//                 })
+//             }
+//         }
+//     })
+// }, 200);
+
+function removeSubscription(index){
+    subscriptions.splice(index, 1);
+}
+
+// When post is made to subscribe, add the subscription to the array
+app.post('/subscribe', (req, res) => {
+    subscriptions.push(req.body);
+    console.log(req.body.operator);
+    console.log(subscriptions);
+    // res.setHeader('Content-Type', 'application/json');
+    // res.sendFile(path.join(__dirname, 'index.html'));
+})
 
 app.listen(8080, () => console.log('Listening on port 8080!'))
