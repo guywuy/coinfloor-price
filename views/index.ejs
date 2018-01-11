@@ -169,60 +169,60 @@
 
     <script>
 
-    function updatePrices(){
+        function updatePrices(){
 
-        fetch('/current').then(response => response.json())
-        .then( prices => {
-            
-            document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
-            document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
-            document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
-            document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
-            document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
-            document.querySelector('#bch-change').innerHTML = prices.bchChange > 0 ? '+' + prices.bchChange : prices.bchChange;
-            document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
-            document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
-            document.querySelector('#time').innerHTML = prices.time;
-
-            // Work out xbt class to add from price change
-            let xbtClassToAdd = '';
-            if (prices.xbtChange <= -40){
-                xbtClassToAdd = 'decrease--2'
-            } else if (prices.xbtChange <= -10){
-                xbtClassToAdd = 'decrease--1'
-            } else if (prices.xbtChange >= 40){
-                xbtClassToAdd = 'increase--2'
-            } else if (prices.xbtChange >= 10){
-                xbtClassToAdd = 'increase--1'
-            } 
-            // Add or remove classes to reflect price change
-            document.querySelector('#xbt-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-            document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
-            
-            // Also add / remove class from html
-            document.querySelector('html').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-            document.querySelector('html').classList.add(xbtClassToAdd);
-            
-
-            // Work out bch class to add from price change
-            let bchClassToAdd = '';
-            if (prices.bchChange <= -40){
-                bchClassToAdd = 'decrease--2'
-            } else if (prices.bchChange <= -10){
-                bchClassToAdd = 'decrease--1'
-            } else if (prices.bchChange >= 40){
-                bchClassToAdd = 'increase--2'
-            } else if (prices.bchChange >= 10){
-                bchClassToAdd = 'increase--1'
-            } 
-            // Add or remove classes to reflect price change
-            document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-            document.querySelector('#bch-change').classList.add(bchClassToAdd);
-        })
-        .catch(() => console.log("Oops! Can't get current prices"));
+            fetch('/current').then(response => response.json())
+            .then( prices => {
                 
-    }
-    let inty = setInterval(updatePrices, 8000);
+                document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
+                document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
+                document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
+                document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
+                document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
+                document.querySelector('#bch-change').innerHTML = prices.bchChange > 0 ? '+' + prices.bchChange : prices.bchChange;
+                document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
+                document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
+                document.querySelector('#time').innerHTML = prices.time;
+
+                // Work out xbt class to add from price change
+                let xbtClassToAdd = '';
+                if (prices.xbtChange <= -40){
+                    xbtClassToAdd = 'decrease--2'
+                } else if (prices.xbtChange <= -10){
+                    xbtClassToAdd = 'decrease--1'
+                } else if (prices.xbtChange >= 40){
+                    xbtClassToAdd = 'increase--2'
+                } else if (prices.xbtChange >= 10){
+                    xbtClassToAdd = 'increase--1'
+                } 
+                // Add or remove classes to reflect price change
+                document.querySelector('#xbt-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
+                document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
+                
+                // Also add / remove class from html
+                document.querySelector('html').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
+                document.querySelector('html').classList.add(xbtClassToAdd);
+                
+
+                // Work out bch class to add from price change
+                let bchClassToAdd = '';
+                if (prices.bchChange <= -40){
+                    bchClassToAdd = 'decrease--2'
+                } else if (prices.bchChange <= -10){
+                    bchClassToAdd = 'decrease--1'
+                } else if (prices.bchChange >= 40){
+                    bchClassToAdd = 'increase--2'
+                } else if (prices.bchChange >= 10){
+                    bchClassToAdd = 'increase--1'
+                } 
+                // Add or remove classes to reflect price change
+                document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
+                document.querySelector('#bch-change').classList.add(bchClassToAdd);
+            })
+            .catch(() => console.log("Oops! Can't get current prices"));
+                    
+        }
+        let inty = setInterval(updatePrices, 8000);
 
     </script>
 

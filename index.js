@@ -3,6 +3,13 @@ const https = require('https');
 const http = require('http');
 const ejs = require('ejs');
 const fs = require('fs');
+const express = require('express');
+const app = express();
+
+app.set('views', './views');
+app.set('view engine', 'ejs');
+
+app.use(express.static('./'));
 
 
 
@@ -17,9 +24,6 @@ var prices = {
     'bchChange': 0,
     'time': Date.now()
 }
-
-var htmlContent = fs.readFileSync(__dirname + '/views/index.ejs', 'utf8');
-
 
 // Variables for calculating change over time
 var xbtPrevious = 0;
@@ -123,18 +127,17 @@ let inty = setInterval(updateVals, 8000);
 updateVals();
 
 
-var server = http.createServer(handleRequest);
-server.listen(8080);
 
-console.log('Server started on port 8080');
+app.get('/', (req, res) => {
 
-function handleRequest(req, res) {
-    //Create a basic route for client js to be able to get prices
-    if(req.url === '/current'){
-        res.end(JSON.stringify(prices))
-    }
+    res.render('index.ejs', {
+        prices: prices
+    })
+})
 
-    var htmlRenderized = ejs.render(htmlContent, {prices: prices});
+app.get('/current', (req, res) => {
+    res.end(JSON.stringify(prices))    
+})
 
-    res.end(htmlRenderized);
-}
+
+app.listen(8080, () => console.log('Listening on port 8080!'))
