@@ -216,7 +216,8 @@ function checkSubscriptions(){
                     console.log('Push notification sent, removing subscription with target: ' + sub.target);
                     removeSubscription(i);
                 }).catch( err => {
-                    console.log(err)
+                    console.log('Error sending push from server, removing subscription.', err)
+                    removeSubscription(i);
                 })
             }
         }

@@ -13,21 +13,13 @@ self.addEventListener('push', event => {
     let obj = event.data.json();
 
     let options = {
-        body: obj.generated,
+        body: 'Price is ' + obj.xbtPrice + '. Target was ' + obj.target,
         icon: 'images/notification-flat.png',
         vibrate: [100, 50, 100],
         data: {
             dateOfArrival: Date.now()
           },
-          requireInteraction: true,
-
-          // add actions to the notification
-          actions: [
-            {action: 'explore', title: 'Go to the site',
-              icon: 'img/checkmark.png'},
-            {action: 'close', title: 'Close the notification',
-              icon: 'img/xmark.png'},
-          ]
+          requireInteraction: true
     }
 
     let title = "Price threshold reached";
@@ -39,15 +31,22 @@ self.addEventListener('push', event => {
 
 
 // Handle the notificationclick event
-self.addEventListener('notificationclick', e => {
-    let notification = e.notification;
-    let primaryKey = notification.data.primaryKey;
-    let action = e.action;
-
-    if (action === 'close') {
-      notification.close();
-    } else {
-      clients.openWindow('/');
-      notification.close();
-    }
-  })
+self.addEventListener('notificationclick', function(event) {
+  
+    // close the notification
+    event.notification.close();
+  
+    // see if the current is open and if it is focus it
+    // otherwise open new tab
+    event.waitUntil(
+  
+      self.clients.matchAll().then(function(clientList) {
+    
+        if (clientList.length > 0) {
+          return clientList[0].focus();
+        }
+    
+        return self.clients.openWindow('/');
+      })
+    );
+  });

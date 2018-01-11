@@ -131,6 +131,9 @@
         padding: 8px;
         grid-column: span 2;
     }
+    label.success {
+        grid-column: span 4;
+    }
     input[type=number], button{
         background: none;
         padding: 8px;
@@ -166,6 +169,9 @@
         label {
             font-size: 12px;
             padding: 4px;
+        }
+        label.success {
+            grid-column: span 2;
         }
         input[type=number], button{
             padding: 4px;
@@ -236,6 +242,11 @@
 
     <script>
 
+        const priceThreshold = {
+            large: 50,
+            small: 10
+        }
+
         // Register the service worker.
         if (!(navigator.serviceWorker)) {
             console.log("Sorry, no service worker support in your browser");
@@ -299,7 +310,7 @@
         })
 
         function updateUISuccess(id, value){
-            document.querySelector(`#${id}`).innerHTML = `Thanks, you will be notified if the price goes ${id=='max-target' ? 'above' : 'below'} ${value}`;
+            document.querySelector(`#${id}`).innerHTML = `<label class="success">Thanks, you will be notified if the price goes ${id=='max-target' ? 'above' : 'below'} ${value}</label>`;
         }
 
 
@@ -320,13 +331,13 @@
 
                 // Work out xbt class to add from price change
                 let xbtClassToAdd = '';
-                if (prices.xbtChange <= -40){
+                if (prices.xbtChange <= -priceThreshold.large){
                     xbtClassToAdd = 'decrease--2'
-                } else if (prices.xbtChange <= -10){
+                } else if (prices.xbtChange <= -priceThreshold.small){
                     xbtClassToAdd = 'decrease--1'
-                } else if (prices.xbtChange >= 40){
+                } else if (prices.xbtChange >= priceThreshold.large){
                     xbtClassToAdd = 'increase--2'
-                } else if (prices.xbtChange >= 10){
+                } else if (prices.xbtChange >= priceThreshold.small){
                     xbtClassToAdd = 'increase--1'
                 } 
                 // Add or remove classes to reflect price change
@@ -340,13 +351,13 @@
 
                 // Work out bch class to add from price change
                 let bchClassToAdd = '';
-                if (prices.bchChange <= -40){
+                if (prices.bchChange <= -priceThreshold.large){
                     bchClassToAdd = 'decrease--2'
-                } else if (prices.bchChange <= -10){
+                } else if (prices.bchChange <= -priceThreshold.small){
                     bchClassToAdd = 'decrease--1'
-                } else if (prices.bchChange >= 40){
+                } else if (prices.bchChange >= priceThreshold.large){
                     bchClassToAdd = 'increase--2'
-                } else if (prices.bchChange >= 10){
+                } else if (prices.bchChange >= priceThreshold.small){
                     bchClassToAdd = 'increase--1'
                 } 
                 // Add or remove classes to reflect price change
