@@ -155,7 +155,7 @@ var subscriptions = [];
 // If there are any subscriptions, check whether the current price satisfies the target.
 // If it does, send a push notification and remove the subscription.
 function checkSubscriptions(){
-    console.log('checking subscriptions. subscriptions length is: ' + subscriptions.length)
+    // console.log('checking subscriptions. subscriptions length is: ' + subscriptions.length)
     if(subscriptions.length<1) return;
     let xbtPrice = prices.xbtLast;
 
@@ -224,75 +224,6 @@ function checkSubscriptions(){
 }
 
 
-// let inter = setInterval( function(){
-//     let xbtPrice = prices.xbtLast;
-    
-//     if(subscriptions.length<1) return;
-
-//     subscriptions.forEach( (sub, i) => {
-//         if (sub.operator == 'gt'){
-//             if (xbtPrice > sub.target){
-//                 console.log('High target matched.');
-//                 let message =  JSON.stringify({
-//                     'xbtPrice': xbtPrice,
-//                     'operator' : sub.operator,
-//                     'target' : sub.target
-//                 });
-                
-//                 const options = {
-//                     TTL: 60,
-//                     vapidDetails: {
-//                         subject: 'mailto: pushyman@mailinator.com',
-//                         publicKey: vapidPublicKey,
-//                         privateKey: vapidPrivateKey
-//                     }
-//                 }
-                
-//                 webpush.sendNotification(
-//                     sub.subscription,
-//                     message,
-//                     options
-//                 ).then( resp => {
-//                     console.log('Push notification sent, removing subscription with target: ' + sub.target);
-//                     removeSubscription(i);
-//                 }).catch( err => {
-//                     console.log('Error sending push from server, removing subscription.', err)
-//                     removeSubscription(i);
-//                 })
-//             }
-//         } else {
-//             if (xbtPrice < sub.target){
-//                 console.log('Low target matched');
-//                 let message =  JSON.stringify({
-//                     'xbtPrice': xbtPrice,
-//                     'operator' : sub.operator,
-//                     'target' : sub.target
-//                 });
-                
-//                 const options = {
-//                     TTL: 60,
-//                     vapidDetails: {
-//                         subject: 'mailto: pushyman@mailinator.com',
-//                         publicKey: vapidPublicKey,
-//                         privateKey: vapidPrivateKey
-//                     }
-//                 }
-                
-//                 webpush.sendNotification(
-//                     sub.subscription,
-//                     message,
-//                     options
-//                 ).then( resp => {
-//                     console.log('Push notification sent, removing subscription with target: ' + sub.target);
-//                     removeSubscription(i);
-//                 }).catch( err => {
-//                     console.log(err)
-//                 })
-//             }
-//         }
-//     })
-// }, 200);
-
 function removeSubscription(index){
     subscriptions.splice(index, 1);
 }
@@ -300,10 +231,8 @@ function removeSubscription(index){
 // When post is made to subscribe, add the subscription to the array
 app.post('/subscribe', (req, res) => {
     subscriptions.push(req.body);
-    console.log(req.body.operator);
-    console.log(subscriptions);
-    // res.setHeader('Content-Type', 'application/json');
-    // res.sendFile(path.join(__dirname, 'index.html'));
+    console.log('POST has been made, with req body: ', req.body);
+    res.end();
 })
 
 app.listen(8080, () => console.log('Listening on port 8080!'))

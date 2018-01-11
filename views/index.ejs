@@ -7,11 +7,18 @@
 <title>XBT and BTC price</title>
 
 <style>
+    :root {
+        --red: #d05944;
+    }
+
     html {
         background: #c5c5c5;
         min-height: 100vh;
         border: 5px solid grey;
+        padding: 5px;
         box-shadow: 0px 0px 0px 5px white inset;
+    }
+    * {
         box-sizing: border-box;
     }
     html.increase--1 {
@@ -21,10 +28,10 @@
         border: 5px solid green;
     }
     html.decrease--1 {
-        border: 5px solid red;
+        border: 5px solid var(--red);
     }
     html.decrease--2 {
-        border: 5px solid red;
+        border: 5px solid var(--red);
     }
     html.increase--1:before {
         content: '';
@@ -52,21 +59,8 @@
         grid-template-columns: 1fr 1fr;
         grid-template-rows: 80px 80px;
         grid-gap: 8px;
-        margin: 46px 0;
-    }
-    @media (max-width: 500px){
-        section>*:nth-child(4n+1) {
-            grid-column: span 2;
-        }
-        section>*:nth-child(4n+2) {
-            grid-column: span 2;
-        }
-        h2 {
-            text-align: center;
-        }
-        #time {
-            text-align: center;
-        }
+        margin-top: 46px;
+        margin-bottom: 12px
     }
     section>*{
         padding: 20px;
@@ -75,7 +69,7 @@
     }
     section>*:nth-child(4n+1) { background: goldenrod;}
     section>*:nth-child(4n+2) { background: dodgerblue;}
-    section>*:nth-child(4n+3) { background: tomato;}
+    section>*:nth-child(4n+3) { background: var(--red);}
     section>*:nth-child(4n+4) { background: #009900;}
 
     h2 {
@@ -102,10 +96,10 @@
         color: green;
     }
     .change.decrease--1 {
-        color: red;
+        color: var(--red);
     }
     .change.decrease--2 {
-        color: red;
+        color: var(--red);
     }
     .increase--1:before{
         content: '▲';
@@ -122,6 +116,64 @@
     .decrease--2:before{
         content: '▼▼';
         font-size: 20px;
+    }
+
+    form{
+        margin-bottom: 0.8em;
+        border-bottom: 1px dotted black;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-template-rows: 1fr;
+        grid-gap: 8px;
+    }
+    label {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 8px;
+        grid-column: span 2;
+    }
+    input[type=number], button{
+        background: none;
+        padding: 8px;
+        font-size: 14px;
+        border: 2px solid green;
+        color: green;
+        text-align: center;
+    }
+    #min-target input[type=number], #min-target button {
+        border: 2px solid var(--red);
+        color: var(--red);
+    }
+    @media (max-width: 500px){
+        section {
+            grid-gap: 4px;
+        }
+        section>*:nth-child(4n+1) {
+            grid-column: span 2;
+        }
+        section>*:nth-child(4n+2) {
+            grid-column: span 2;
+        }
+        h2 {
+            text-align: center;
+        }
+        #time {
+            text-align: center;
+        }
+        form{
+            grid-template-columns: 1fr 1fr;
+            grid-row-gap: 2px;
+        }
+        label {
+            font-size: 12px;
+            padding: 4px;
+        }
+        input[type=number], button{
+            padding: 4px;
+            font-size: 14px;
+            border: 2px solid green;
+            color: green;
+            text-align: center;
+        }
     }
 </style>    
 </head>
@@ -147,6 +199,18 @@
         </div>
     </section>
 
+    <form class="target-form" id="max-target">
+        <label>Let me know if the price goes <strong>above</strong></label>
+        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))+200  %>' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+    
+    <form class="target-form" id="min-target">
+        <label>Let me know if the price goes <strong>below</strong></label>
+        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))-200  %>' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+
     <section class="bch">
         <div>
             <h2>B C H</h2>
@@ -167,17 +231,7 @@
     </section>
     <p id="time"><%- prices.time  %></p>
 
-    <form class="target-form" id="max-target">
-        <label>Let me know if the price goes above</label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))+200  %>' name='targetValue' />
-        <button type='submit' id='subscription'>Notify me</button>
-    </form>
     
-    <form class="target-form" id="min-target">
-        <label>Let me know if the price goes below</label>
-        <input type='number' value='5' name='targetValue' />
-        <button type='submit' id='subscription'>Notify me</button>
-    </form>
 
 
     <script>
@@ -235,7 +289,6 @@
                             body: postbody
                         })
                         .then(function(res){ 
-                            console.log(ev.target.id)
                             updateUISuccess(ev.target.id, target);
                             console.log(res);
                         })
@@ -254,8 +307,6 @@
 
             fetch('/current').then(response => response.json())
             .then( prices => {
-
-                console.log(prices);
                 
                 document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
                 document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
@@ -302,7 +353,7 @@
                 document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
                 document.querySelector('#bch-change').classList.add(bchClassToAdd);
             })
-            .catch(() => console.log("Oops! Can't get current prices"));
+            .catch((err) => console.log(err));
                     
         }
         let inty = setInterval(updatePrices, 8000);
