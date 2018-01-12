@@ -168,27 +168,8 @@ function checkSubscriptions(){
                     'operator' : sub.operator,
                     'target' : sub.target
                 });
-                
-                const options = {
-                    TTL: 60,
-                    vapidDetails: {
-                        subject: 'mailto: pushyman@mailinator.com',
-                        publicKey: vapidPublicKey,
-                        privateKey: vapidPrivateKey
-                    }
-                }
-                
-                webpush.sendNotification(
-                    sub.subscription,
-                    message,
-                    options
-                ).then( resp => {
-                    console.log('Push notification sent, removing subscription with target: ' + sub.target);
-                    removeSubscription(i);
-                }).catch( err => {
-                    console.log('Error sending push from server, removing subscription.', err)
-                    removeSubscription(i);
-                })
+
+                sendPushNotification(sub.subscription, message);
             }
         } else {
             if (xbtPrice < sub.target){
@@ -198,32 +179,36 @@ function checkSubscriptions(){
                     'operator' : sub.operator,
                     'target' : sub.target
                 });
-                
-                const options = {
-                    TTL: 60,
-                    vapidDetails: {
-                        subject: 'mailto: pushyman@mailinator.com',
-                        publicKey: vapidPublicKey,
-                        privateKey: vapidPrivateKey
-                    }
-                }
-                
-                webpush.sendNotification(
-                    sub.subscription,
-                    message,
-                    options
-                ).then( resp => {
-                    console.log('Push notification sent, removing subscription with target: ' + sub.target);
-                    removeSubscription(i);
-                }).catch( err => {
-                    console.log('Error sending push from server, removing subscription.', err)
-                    removeSubscription(i);
-                })
+
+                sendPushNotification(sub.subscription, message);
             }
         }
     })
 }
 
+function sendPushNotification(subscription, message){
+
+    const options = {
+        TTL: 60,
+        vapidDetails: {
+            subject: 'mailto: pushyman@mailinator.com',
+            publicKey: vapidPublicKey,
+            privateKey: vapidPrivateKey
+        }
+    }
+
+    webpush.sendNotification(
+        subscription,
+        message,
+        options
+    ).then( resp => {
+        console.log('Push notification sent, removing subscription with target: ' + sub.target);
+        removeSubscription(i);
+    }).catch( err => {
+        console.log('Error sending push from server, removing subscription.', err)
+        removeSubscription(i);
+    })
+}
 
 function removeSubscription(index){
     subscriptions.splice(index, 1);

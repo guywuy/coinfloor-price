@@ -14,7 +14,7 @@ self.addEventListener('push', event => {
 
     let options = {
         body: 'Price is ' + obj.xbtPrice + '. Target was ' + obj.target,
-        icon: 'images/notification-flat.png',
+        icon: `public/images/${obj.operator == 'gt' ? 'green' : 'red'}arrow.png`,
         vibrate: [100, 50, 100],
         data: {
             dateOfArrival: Date.now()

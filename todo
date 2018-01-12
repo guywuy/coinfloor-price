@@ -1,5 +1,5 @@
 Add option to set another notification once one has been submitted.
-Include better information in notification.
+
 
 Save subscriptions in db (e.g. mongo) and retreive them. Best done as a promise, see this page 
 https://developers.google.com/web/fundamentals/push-notifications/sending-messages-with-web-push-libraries
@@ -17,6 +17,3 @@ https://developers.google.com/web/fundamentals/push-notifications/sending-messag
 
     return promiseChain;
   })
-
-
-  Refactor the checking and sending function in server js to not duplicate code. 
