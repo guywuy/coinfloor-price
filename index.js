@@ -137,7 +137,6 @@ updateVals();
 
 
 app.get('/', (req, res) => {
-
     res.render('index.ejs', {
         prices: prices
     })
@@ -155,24 +154,26 @@ var subscriptions = [];
 // If there are any subscriptions, check whether the current price satisfies the target.
 // If it does, send a push notification and remove the subscription.
 function checkSubscriptions(){
-    // console.log('checking subscriptions. subscriptions length is: ' + subscriptions.length)
+
     if(subscriptions.length<1) return;
+
     let xbtPrice = prices.xbtLast;
 
-    subscriptions.forEach( (sub, i) => {
+    subscriptions.forEach( (sub, index) => {
         if (sub.operator == 'gt'){
-            if (xbtPrice > sub.target){
+            if (parseInt(xbtPrice) > parseInt(sub.target, 10)){
                 console.log('High target matched.');
+                console.log(xbtPrice, sub.target);
                 let message =  JSON.stringify({
                     'xbtPrice': xbtPrice,
                     'operator' : sub.operator,
                     'target' : sub.target
                 });
 
-                sendPushNotification(sub.subscription, message);
+                sendPushNotification(sub.subscription, message, index);
             }
         } else {
-            if (xbtPrice < sub.target){
+            if (parseInt(xbtPrice) < parseInt(sub.target)){
                 console.log('Low target matched');
                 let message =  JSON.stringify({
                     'xbtPrice': xbtPrice,
@@ -180,13 +181,13 @@ function checkSubscriptions(){
                     'target' : sub.target
                 });
 
-                sendPushNotification(sub.subscription, message);
+                sendPushNotification(sub.subscription, message, index);
             }
         }
     })
 }
 
-function sendPushNotification(subscription, message){
+function sendPushNotification(subscription, message, subscriptionIndex){
 
     const options = {
         TTL: 60,
@@ -202,11 +203,11 @@ function sendPushNotification(subscription, message){
         message,
         options
     ).then( resp => {
-        console.log('Push notification sent, removing subscription with target: ' + sub.target);
-        removeSubscription(i);
+        console.log('Push notification sent. Removing subscription with details: ', message);
+        removeSubscription(subscriptionIndex);
     }).catch( err => {
         console.log('Error sending push from server, removing subscription.', err)
-        removeSubscription(i);
+        removeSubscription(subscriptionIndex);
     })
 }
 
@@ -217,7 +218,7 @@ function removeSubscription(index){
 // When post is made to subscribe, add the subscription to the array
 app.post('/subscribe', (req, res) => {
     subscriptions.push(req.body);
-    console.log('POST has been made, with req body: ', req.body);
+    console.log(req.body);
     res.end();
 })
 

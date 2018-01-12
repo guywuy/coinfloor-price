@@ -9,6 +9,11 @@ self.addEventListener('activate', ev => {
 
 // Listen for push events, when one is received, notify user
 self.addEventListener('push', event => {
+    if (!event.data) {
+      console.log('No data supplied with the push event.')
+      return
+    }
+    
     console.log('This push event has data: ', event.data.json());
     let obj = event.data.json();
 

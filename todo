@@ -17,3 +17,5 @@ https://developers.google.com/web/fundamentals/push-notifications/sending-messag
 
     return promiseChain;
   })
+
+I think sometimes there is faulty logic causing price targets to become switched. E.g. low targets becoming high targets and showing the wrong notification. Could be the form submitting and sending the wrong operator. Or maybe the logic on the server.
