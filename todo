@@ -1,5 +1,6 @@
 Add option to set another notification once one has been submitted.
 
+Add capability of setting bch notifications too.
 
 Save subscriptions in db (e.g. mongo) and retreive them. Best done as a promise, see this page 
 https://developers.google.com/web/fundamentals/push-notifications/sending-messages-with-web-push-libraries
@@ -18,4 +19,3 @@ https://developers.google.com/web/fundamentals/push-notifications/sending-messag
     return promiseChain;
   })
 
-I think sometimes there is faulty logic causing price targets to become switched. E.g. low targets becoming high targets and showing the wrong notification. Could be the form submitting and sending the wrong operator. Or maybe the logic on the server.

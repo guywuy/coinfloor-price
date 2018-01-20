@@ -329,6 +329,8 @@
                 document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
                 document.querySelector('#time').innerHTML = prices.time;
 
+                document.title = `XBT: ${prices.xbtLast.slice(0, -3)} | BCH: ${prices.bchLast.slice(0, -3)}`
+
                 // Work out xbt class to add from price change
                 let xbtClassToAdd = '';
                 if (prices.xbtChange <= -priceThreshold.large){
