@@ -18,7 +18,7 @@ self.addEventListener('push', event => {
     let obj = event.data.json();
 
     let options = {
-        body: 'Price is ' + obj.xbtPrice + '. Target was ' + obj.target + '. Time: ' + obj.time,
+        body: 'Price is ' + obj.price + '. Target was ' + obj.target + '. Time: ' + obj.time,
         icon: `public/images/${obj.operator == 'gt' ? 'green' : 'red'}arrow.png`,
         vibrate: [100, 50, 100],
         data: {
@@ -27,7 +27,7 @@ self.addEventListener('push', event => {
           requireInteraction: true
     }
 
-    let title = "Price threshold reached";
+    let title = obj.currency.toUpperCase() + " price threshold reached";
 
     event.waitUntil(
       self.registration.showNotification(title, options)

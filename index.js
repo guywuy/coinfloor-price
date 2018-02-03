@@ -180,6 +180,7 @@ function checkSubscriptions(){
         } else {
             if (parseInt(currPrices[sub.currency]) < parseInt(sub.target)){
                 let message =  JSON.stringify({
+                    'currency' : sub.currency,
                     'price': currPrices[sub.currency],
                     'operator' : sub.operator,
                     'target' : sub.target,
