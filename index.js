@@ -157,28 +157,33 @@ function checkSubscriptions(){
 
     if(subscriptions.length<1) return;
 
-    let xbtPrice = prices.xbtLast;
+    let currPrices = {
+        xbt : prices.xbtLast,
+        bch : prices.bchLast
+    }
+    let now = new Date();
+    let formattedTime = now.getHours() + ':' + now.getMinutes();
 
     subscriptions.forEach( (sub, index) => {
         if (sub.operator == 'gt'){
-            if (parseInt(xbtPrice) > parseInt(sub.target, 10)){
+            if (parseInt(currPrices[sub.currency]) > parseInt(sub.target, 10)){
                 console.log('High target matched.');
-                console.log(xbtPrice, sub.target);
                 let message =  JSON.stringify({
-                    'xbtPrice': xbtPrice,
+                    'price': currPrices[sub.currency],
                     'operator' : sub.operator,
-                    'target' : sub.target
+                    'target' : sub.target,
+                    'time' : formattedTime
                 });
 
                 sendPushNotification(sub.subscription, message, index);
             }
         } else {
-            if (parseInt(xbtPrice) < parseInt(sub.target)){
-                console.log('Low target matched');
+            if (parseInt(currPrices[sub.currency]) < parseInt(sub.target)){
                 let message =  JSON.stringify({
-                    'xbtPrice': xbtPrice,
+                    'price': currPrices[sub.currency],
                     'operator' : sub.operator,
-                    'target' : sub.target
+                    'target' : sub.target,
+                    'time' : formattedTime
                 });
 
                 sendPushNotification(sub.subscription, message, index);
@@ -218,7 +223,6 @@ function removeSubscription(index){
 // When post is made to subscribe, add the subscription to the array
 app.post('/subscribe', (req, res) => {
     subscriptions.push(req.body);
-    console.log(req.body);
     res.end();
 })
 

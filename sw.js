@@ -18,7 +18,7 @@ self.addEventListener('push', event => {
     let obj = event.data.json();
 
     let options = {
-        body: 'Price is ' + obj.xbtPrice + '. Target was ' + obj.target,
+        body: 'Price is ' + obj.xbtPrice + '. Target was ' + obj.target + '. Time: ' + obj.time,
         icon: `public/images/${obj.operator == 'gt' ? 'green' : 'red'}arrow.png`,
         vibrate: [100, 50, 100],
         data: {

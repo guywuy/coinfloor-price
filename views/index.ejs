@@ -205,13 +205,13 @@
         </div>
     </section>
 
-    <form class="target-form" id="max-target">
+    <form class="target-form" id="max-target-xbt" data-target='gt' data-currency="xbt">
         <label>Let me know if the price goes <strong>above</strong></label>
         <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))+200  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
     </form>
     
-    <form class="target-form" id="min-target">
+    <form class="target-form" id="min-target-xbt" data-target='lt' data-currency="xbt">
         <label>Let me know if the price goes <strong>below</strong></label>
         <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))-200  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
@@ -235,6 +235,19 @@
             <span id="bch-high"><%- prices.bchHigh.slice(0, -3)  %></span> 
         </div>
     </section>
+    
+    <form class="target-form" id="max-target-bch" data-target='gt' data-currency="bch">
+        <label>Let me know if the price goes <strong>above</strong></label>
+        <input type='number' value='<%- Math.floor(parseInt(prices.bchLast))+100  %>' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+    
+    <form class="target-form" id="min-target-bch" data-target='lt' data-currency="bch">
+        <label>Let me know if the price goes <strong>below</strong></label>
+        <input type='number' value='<%- Math.floor(parseInt(prices.bchLast))-100  %>' name='targetValue' />
+        <button type='submit' id='subscription'>Notify me</button>
+    </form>
+
     <p id="time"><%- prices.time  %></p>
 
     
@@ -267,7 +280,9 @@
                 ev.preventDefault();
 
                 // Determine which form we are interested in
-                let operator = ev.target.id == 'max-target' ? 'gt' : 'lt';
+                let operator = ev.target.dataset.target;
+                // Which currency
+                let currency = ev.target.dataset.currency;
 
                 // Get user permission for push notifications.
                 if(!('Notification' in window)) {
@@ -289,8 +304,12 @@
                         let postbody = JSON.stringify({
                             subscription: subscription.toJSON(),
                             target,
-                            operator: operator
+                            operator,
+                            currency
                         });
+
+                        console.log('postbody:', postbody);
+
                         fetch('/subscribe', {
                             headers: {
                                 'Accept': 'application/json',
@@ -301,7 +320,6 @@
                         })
                         .then(function(res){ 
                             updateUISuccess(ev.target.id, target);
-                            console.log(res);
                         })
                         .catch(function(res){ console.log(res) })
                     });
@@ -310,7 +328,7 @@
         })
 
         function updateUISuccess(id, value){
-            document.querySelector(`#${id}`).innerHTML = `<label class="success">Thanks, you will be notified if the price goes ${id=='max-target' ? 'above' : 'below'} ${value}</label>`;
+            document.querySelector(`#${id}`).innerHTML = `<label class="success">Thanks, you will be notified if the price goes ${id.includes('max-target') ? 'above' : 'below'} ${value}</label>`;
         }
 
 
