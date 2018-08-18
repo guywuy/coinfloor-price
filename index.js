@@ -1,13 +1,13 @@
-const { URL } = require('url');
 const https = require('https');
-const http = require('http');
 const ejs = require('ejs');
-const fs = require('fs');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
+const db = require('diskdb');
 
+
+db.connect('./data', ['subscriptions']);
 
 
 app.set('views', './views');
@@ -149,51 +149,56 @@ app.get('/current', (req, res) => {
 const vapidPublicKey = 'BCWQthp74GCgHRnPB7xv7XWP7XuZ-wkt2JG7DnYfN_68iqO69-UfBVYlSiXSL9gbOWHLzslEf2-_b7LFfBZWFEc';
 const vapidPrivateKey = 'Vl_FNpk5zxPu1CawJ-IMxdPhvUWbYB7TXOzMEOdiyYY';
 
-var subscriptions = [];
 
 // If there are any subscriptions, check whether the current price satisfies the target.
 // If it does, send a push notification and remove the subscription.
 function checkSubscriptions(){
 
+    var subscriptions = db.subscriptions.find();
+
     if(subscriptions.length<1) return;
 
-    let currPrices = {
+    const currPrices = {
         xbt : prices.xbtLast,
         bch : prices.bchLast
     }
-    let now = new Date();
-    let formattedTime = now.getHours() + ':' + now.getMinutes();
+    const now = new Date();
+    const formattedTime = now.getHours() + ':' + now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
 
-    subscriptions.forEach( (sub, index) => {
-        if (sub.operator == 'gt'){
-            if (parseInt(currPrices[sub.currency]) > parseInt(sub.target, 10)){
-                console.log('High target matched.');
+    subscriptions.forEach( (subscriptionObject) => {
+
+        let subCurrency = subscriptionObject.currency;
+        let currentPrice = parseInt(currPrices[subCurrency], 10);
+
+        if (subscriptionObject.operator == 'gt'){
+            if (currentPrice > parseInt(subscriptionObject.target, 10)){
                 let message =  JSON.stringify({
-                    'price': currPrices[sub.currency],
-                    'operator' : sub.operator,
-                    'target' : sub.target,
+                    'currency' : subCurrency,
+                    'price': currentPrice,
+                    'operator' : subscriptionObject.operator,
+                    'target' : subscriptionObject.target,
                     'time' : formattedTime
                 });
 
-                sendPushNotification(sub.subscription, message, index);
+                sendPushNotification(subscriptionObject.subscription, message, subscriptionObject._id);
             }
         } else {
-            if (parseInt(currPrices[sub.currency]) < parseInt(sub.target)){
+            if (currentPrice < parseInt(subscriptionObject.target)){
                 let message =  JSON.stringify({
-                    'currency' : sub.currency,
-                    'price': currPrices[sub.currency],
-                    'operator' : sub.operator,
-                    'target' : sub.target,
+                    'currency' : subCurrency,
+                    'price': currentPrice,
+                    'operator' : subscriptionObject.operator,
+                    'target' : subscriptionObject.target,
                     'time' : formattedTime
                 });
 
-                sendPushNotification(sub.subscription, message, index);
+                sendPushNotification(subscriptionObject.subscription, message, subscriptionObject._id);
             }
         }
     })
 }
 
-function sendPushNotification(subscription, message, subscriptionIndex){
+function sendPushNotification(subscription, message, subscriptionID){
 
     const options = {
         TTL: 60,
@@ -209,22 +214,16 @@ function sendPushNotification(subscription, message, subscriptionIndex){
         message,
         options
     ).then( resp => {
-        console.log('Push notification sent. Removing subscription with details: ', message);
-        removeSubscription(subscriptionIndex);
     }).catch( err => {
-        console.log('Error sending push from server, removing subscription.', err)
-        removeSubscription(subscriptionIndex);
     })
 }
 
-function removeSubscription(index){
-    subscriptions.splice(index, 1);
+function removeSubscription(id){
+    db.subscriptions.remove({_id : id});
 }
 
 // When post is made to subscribe, add the subscription to the array
 app.post('/subscribe', (req, res) => {
-    subscriptions.push(req.body);
+    db.subscriptions.save(req.body);
     res.end();
 })
-
-app.listen(8080, () => console.log('Listening on port 8080!'))
