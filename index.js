@@ -227,3 +227,5 @@ app.post('/subscribe', (req, res) => {
     db.subscriptions.save(req.body);
     res.end();
 })
+
+app.listen(8080, () => console.log('Listening on port 8080!'));
