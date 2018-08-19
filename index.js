@@ -1,5 +1,7 @@
 const https = require('https');
 const ejs = require('ejs');
+const fs = require('fs');
+const os = require('os');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -7,8 +9,9 @@ const webpush = require('web-push');
 const db = require('diskdb');
 
 
-db.connect('./data', ['subscriptions']);
+db.connect(os.tmpdir(), ['subscriptions']);
 
+console.log('os.tmpdir() :', os.tmpdir());
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
@@ -163,7 +166,7 @@ function checkSubscriptions(){
         bch : prices.bchLast
     }
     const now = new Date();
-    const formattedTime = now.getHours() + ':' + now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes();
+    const formattedTime =`${now.getHours()}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`;
 
     subscriptions.forEach( (subscriptionObject) => {
 
@@ -214,12 +217,15 @@ function sendPushNotification(subscription, message, subscriptionID){
         message,
         options
     ).then( resp => {
+        removeSubscription(subscriptionID);
     }).catch( err => {
     })
+
 }
 
 function removeSubscription(id){
     db.subscriptions.remove({_id : id});
+    console.log('Removed subscription with id: ', id);
 }
 
 // When post is made to subscribe, add the subscription to the array
