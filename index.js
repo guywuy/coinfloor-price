@@ -6,12 +6,51 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const webpush = require('web-push');
-const db = require('diskdb');
+const { MONGO_URL } = process.env;
 
+const vapidPublicKey = 'BCWQthp74GCgHRnPB7xv7XWP7XuZ-wkt2JG7DnYfN_68iqO69-UfBVYlSiXSL9gbOWHLzslEf2-_b7LFfBZWFEc';
+const vapidPrivateKey = 'Vl_FNpk5zxPu1CawJ-IMxdPhvUWbYB7TXOzMEOdiyYY';
 
-db.connect(os.tmpdir(), ['subscriptions']);
+//-----------------------------------DATABASE--------------------------
+//lets require/import the mongodb native drivers.
+const mongodb = require('mongodb');
+//We need to work with "MongoClient" interface in order to connect to a mongodb server.
+const MongoClient = mongodb.MongoClient;
+// Connection URL. This is where your mongodb server is running.
+// Standard URI format: mongodb://[dbuser:dbpassword@]host:port/dbname
+const DBURL = MONGO_URL;
+const DBNAME = 'cfsubscriptions';
+const COLLECTIONNAME = 'subscriptions';
 
-console.log('os.tmpdir() :', os.tmpdir());
+// DB FUNCTIONS
+const insertDocument = function(db, document, callback) {
+    // Get the documents collection
+    const collection = db.collection(COLLECTIONNAME);
+    // Insert some documents
+    collection.insertOne(document, function(err, result) {
+        if (err) console.error(err);
+        console.log("Inserted document into the collection");
+        callback(result);
+    });
+}
+const findDocuments = function(db, query, callback) {
+    // Get the documents collection
+    const collection = db.collection(COLLECTIONNAME);
+    // Find some documents
+    collection.find(query).toArray(function(err, docs) {
+        callback(docs, db);
+    });
+}
+const removeDocument = function(db, document, callback) {
+    // Get the documents collection
+    const collection = db.collection(COLLECTIONNAME);
+    // Find some documents
+    collection.deleteOne({"_id" : document._id}, function(err, result) {
+        console.log("Removed the document with id: " + document._id);
+        callback(result);
+    });    
+}
+
 
 app.set('views', './views');
 app.set('view engine', 'ejs');
@@ -89,7 +128,7 @@ function updateVals(){
             }
         });
     }).on('error', (e) => {
-        console.error(e);
+        console.error("Error getting coinfloor XBT", e);
     });
 
     // GET BCH from coinfloor api
@@ -124,14 +163,15 @@ function updateVals(){
             }
         });
     }).on('error', (e) => {
-        console.error(e);
+        console.error("Error getting coinfloor BCH", e);
     });
 }
 
 // Set a timeout to automatically update the prices ready to send to users.
 let inty = setInterval(() => {
     updateVals();
-    checkSubscriptions();
+    findMatchingSubscriptions();
+    // checkSubscriptions();
 }, 8000);
 
 // Update values initially
@@ -142,96 +182,115 @@ updateVals();
 app.get('/', (req, res) => {
     res.render('index.ejs', {
         prices: prices
-    })
+    }, function(err, html) {
+        if (err) console.err('Error getting route of coinfloor price, in res.render');
+        res.send(html);
+      })
 })
 
 app.get('/current', (req, res) => {
-    res.end(JSON.stringify(prices))    
+    res.json(prices)    
 })
 
-const vapidPublicKey = 'BCWQthp74GCgHRnPB7xv7XWP7XuZ-wkt2JG7DnYfN_68iqO69-UfBVYlSiXSL9gbOWHLzslEf2-_b7LFfBZWFEc';
-const vapidPrivateKey = 'Vl_FNpk5zxPu1CawJ-IMxdPhvUWbYB7TXOzMEOdiyYY';
 
 
-// If there are any subscriptions, check whether the current price satisfies the target.
-// If it does, send a push notification and remove the subscription.
-function checkSubscriptions(){
 
-    var subscriptions = db.subscriptions.find();
-
-    if(subscriptions.length<1) return;
+function findMatchingSubscriptions(){
 
     const currPrices = {
         xbt : prices.xbtLast,
         bch : prices.bchLast
-    }
+    };
     const now = new Date();
     const formattedTime =`${now.getHours()}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`;
 
-    subscriptions.forEach( (subscriptionObject) => {
 
-        let subCurrency = subscriptionObject.currency;
-        let currentPrice = parseInt(currPrices[subCurrency], 10);
-
-        if (subscriptionObject.operator == 'gt'){
-            if (currentPrice > parseInt(subscriptionObject.target, 10)){
-                let message =  JSON.stringify({
-                    'currency' : subCurrency,
-                    'price': currentPrice,
-                    'operator' : subscriptionObject.operator,
-                    'target' : subscriptionObject.target,
-                    'time' : formattedTime
-                });
-
-                sendPushNotification(subscriptionObject.subscription, message, subscriptionObject._id);
-            }
+    MongoClient.connect(DBURL, function (err, client) {
+        
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
         } else {
-            if (currentPrice < parseInt(subscriptionObject.target)){
-                let message =  JSON.stringify({
-                    'currency' : subCurrency,
-                    'price': currentPrice,
-                    'operator' : subscriptionObject.operator,
-                    'target' : subscriptionObject.target,
-                    'time' : formattedTime
-                });
+            console.log('Connection established to', DBURL);
 
-                sendPushNotification(subscriptionObject.subscription, message, subscriptionObject._id);
-            }
+            const db = client.db(DBNAME);
+
+            // Get all subscriptions and if they match target, send push notification and then delete from db
+            findDocuments(db, {}, function(docs, db) {
+
+                if (docs.length === 0) return;
+
+                docs.forEach(subscriptionObject => {
+                    let subCurrency = subscriptionObject.currency;
+                    let currentPrice = parseInt(currPrices[subCurrency], 10);
+
+                    if ((subscriptionObject.operator === 'gt' && currentPrice > parseInt(subscriptionObject.target, 10)) || (subscriptionObject.operator === 'lt' && currentPrice < parseInt(subscriptionObject.target, 10))){
+                            let message =  JSON.stringify({
+                                'currency' : subCurrency,
+                                'price': currentPrice,
+                                'operator' : subscriptionObject.operator,
+                                'target' : subscriptionObject.target,
+                                'time' : formattedTime
+                            });
+
+                            const notificationOptions = {
+                                TTL: 60,
+                                vapidDetails: {
+                                    subject: 'mailto: pushyman@mailinator.com',
+                                    publicKey: vapidPublicKey,
+                                    privateKey: vapidPrivateKey
+                                }
+                            }
+
+                            webpush.sendNotification(
+                                subscriptionObject.subscription,
+                                message,
+                                notificationOptions
+                            ).then( resp => {
+
+                                // Remove the subscription from the db
+                                MongoClient.connect(DBURL, function (err, client) {
+                                    if (err) {
+                                        console.log('Unable to connect to the mongoDB server. Error:', err);
+                                    } else {                            
+                                        const db = client.db(DBNAME);
+                                        removeDocument(db, subscriptionObject, function() {
+                                            client.close();
+                                        });
+                                    }
+                                })
+                            }).catch( err => {
+                                console.error(err);
+                            })
+                    } 
+                })
+                client.close();
+            });
+
         }
-    })
+    });
 }
 
-function sendPushNotification(subscription, message, subscriptionID){
 
-    const options = {
-        TTL: 60,
-        vapidDetails: {
-            subject: 'mailto: pushyman@mailinator.com',
-            publicKey: vapidPublicKey,
-            privateKey: vapidPrivateKey
-        }
-    }
-
-    webpush.sendNotification(
-        subscription,
-        message,
-        options
-    ).then( resp => {
-        removeSubscription(subscriptionID);
-    }).catch( err => {
-    })
-
-}
-
-function removeSubscription(id){
-    db.subscriptions.remove({_id : id});
-    console.log('Removed subscription with id: ', id);
-}
 
 // When post is made to subscribe, add the subscription to the array
 app.post('/subscribe', (req, res) => {
-    db.subscriptions.save(req.body);
+
+    MongoClient.connect(DBURL, function (err, client) {
+        
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+        } else {
+
+            const db = client.db(DBNAME);
+
+            insertDocument(db, req.body, function() {
+                client.close();
+            });
+
+        }
+    });
+
     res.end();
 })
 
-app.listen(8080, () => console.log('Listening on port 8080!'));
+app.listen(8080, () => console.log('Listening on port 8080! : http://localhost:8080/'));
