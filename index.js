@@ -61,117 +61,100 @@ app.use(bodyParser.json());
 
 
 var prices = {
-    'xbtLast': '...',
-    'xbtLow': '...',
-    'xbtHigh': '...',
-    'bchLast': '...',
-    'bchLow': '...',
-    'bchHigh': '...',
-    'xbtChange': 0,
-    'bchChange': 0,
+    xbt: {
+        last: '...',
+        low: '...',
+        high: '...',
+        change: 0,
+    },
+    bch: {
+        last: '...',
+        low: '...',
+        high: '...',
+        change: 0,
+    },
+    eth: {
+        last: '...',
+        low: '...',
+        high: '...',
+        change: 0,
+    },
     'time': Date.now()
 }
 
 // Variables for calculating change over time
-var xbtPrevious = 0;
-var xbtChanges = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var bchPrevious = 0;
-var bchChanges = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+var previousValues = {
+    xbt: {
+        previous: 0,
+        changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    bch: {
+        previous: 0,
+        changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+    eth: {
+        previous: 0,
+        changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    },
+}
 
-
-const optionsXBT = {
-    hostname: 'webapi.coinfloor.co.uk',
-    port: 8090,
-    path: '/bist/XBT/GBP/ticker/',
-    method: 'GET'
-};
-const optionsBCH = {
-    hostname: 'webapi.coinfloor.co.uk',
-    port: 8090,
-    path: '/bist/BCH/GBP/ticker/',
-    method: 'GET'
-};
 
 function updateVals(){
 
-    // GET XBT from coinfloor api
-    https.get(optionsXBT, (res) => {
-        res.setEncoding('utf8');
-        prices.time = res.headers.date; // Get time of response from header
-        let rawData = '';
-        res.on('data', (chunk) => { rawData += chunk; });
-        res.on('end', () => {
-            try {
-                const parsedData = JSON.parse(rawData);
-                prices.xbtLast = parsedData.last;
-                prices.xbtLow = parsedData.low;
-                prices.xbtHigh = parsedData.high;
+    let currencies = ['xbt', 'bch', 'eth'];
+    currencies.forEach(function(currency) {
 
-                // make sure initial value of xbt is set
-                if (xbtPrevious == 0) {
-                    xbtPrevious = Math.floor(Number(prices.xbtLast));
+        let getOptions = {
+            hostname: 'webapi.coinfloor.co.uk',
+            port: 8090,
+            path: `/bist/${currency.toUpperCase()}/GBP/ticker/`,
+            method: 'GET'
+        };
+
+        // GET Prices from coinfloor api and update local price object
+        https.get(getOptions, (res) => {
+            res.setEncoding('utf8');
+            prices.time = res.headers.date; // Get time of response from header
+            let rawData = '';
+            res.on('data', (chunk) => { rawData += chunk; });
+            res.on('end', () => {
+                try {
+                    const parsedData = JSON.parse(rawData);
+                    prices[currency].last = parsedData.last;
+                    prices[currency].low = parsedData.low;
+                    prices[currency].high = parsedData.high;
+
+                    // make sure initial value of currency is set
+                    if (previousValues[currency].previous == 0) {
+                        previousValues[currency].previous = Math.floor(Number(prices[currency].last));
+                    }
+
+                    // work out change from previous value
+                    let lastChange = Math.floor(Number(prices[currency].last)) - previousValues[currency].previous;
+                    // add change to array of price changes.
+                    previousValues[currency].changes.shift(); //remove first element
+                    previousValues[currency].changes.push(lastChange);
+                    // work out average change over last few changes.
+                    let averageChange = previousValues[currency].changes.reduce( (accum, curr) => accum + curr );
+                    prices[currency].change = averageChange;
+                    
+                    previousValues[currency].previous = Math.floor(Number(prices[currency].last)) //Set previous xbt to lastprice
+
+                } catch (e) {
+                    console.error(e.message);
                 }
-
-                // work out change from previous value
-                let xbtLastChange = Math.floor(Number(prices.xbtLast)) - xbtPrevious;
-                // add change to array of price changes.
-                xbtChanges.shift(); //remove first element
-                xbtChanges.push(xbtLastChange);
-                // work out average change over last few changes.
-                let averageChange = xbtChanges.reduce( (accum, curr) => accum + curr );
-                prices.xbtChange = averageChange;
-                
-                xbtPrevious = Math.floor(Number(prices.xbtLast)) //Set previous xbt to lastprice
-
-            } catch (e) {
-                console.error(e.message);
-            }
+            });
+        }).on('error', (e) => {
+            console.error("Error getting price from coinfloor", e);
         });
-    }).on('error', (e) => {
-        console.error("Error getting coinfloor XBT", e);
     });
 
-    // GET BCH from coinfloor api
-    https.get(optionsBCH, (res) => {
-        res.setEncoding('utf8');
-        let rawData = '';
-        res.on('data', (chunk) => { rawData += chunk; });
-        res.on('end', () => {
-            try {
-                const parsedData = JSON.parse(rawData);
-                prices.bchLast = parsedData.last;
-                prices.bchLow = parsedData.low;
-                prices.bchHigh = parsedData.high;
-
-                // make sure initial value of xbt is set
-                if (bchPrevious == 0) {
-                    bchPrevious = Math.floor(Number(prices.bchLast));
-                }
-
-                // work out change from previous value
-                let bchLastChange = Math.floor(Number(prices.bchLast)) - bchPrevious;
-                // add change to array of price changes.
-                bchChanges.shift(); //remove first element
-                bchChanges.push(bchLastChange);
-                // work out average change over last few changes.
-                let averageChange = bchChanges.reduce( (accum, curr) => accum + curr );
-                prices.bchChange = averageChange;
-                
-                bchPrevious = Math.floor(Number(prices.bchLast)) //Set previous bch to lastprice
-            } catch (e) {
-                console.error(e.message);
-            }
-        });
-    }).on('error', (e) => {
-        console.error("Error getting coinfloor BCH", e);
-    });
 }
 
 // Set a timeout to automatically update the prices ready to send to users.
 let inty = setInterval(() => {
     updateVals();
     findMatchingSubscriptions();
-    // checkSubscriptions();
 }, 8000);
 
 // Update values initially
@@ -183,7 +166,7 @@ app.get('/', (req, res) => {
     res.render('index.ejs', {
         prices: prices
     }, function(err, html) {
-        if (err) console.err('Error getting route of coinfloor price, in res.render');
+        if (err) console.error(err);
         res.send(html);
       })
 })
@@ -193,13 +176,11 @@ app.get('/current', (req, res) => {
 })
 
 
-
-
 function findMatchingSubscriptions(){
 
     const currPrices = {
-        xbt : prices.xbtLast,
-        bch : prices.bchLast
+        xbt : prices.xbt.last,
+        bch : prices.bch.last
     };
     const now = new Date();
     const formattedTime =`${now.getHours()}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`;

@@ -192,28 +192,28 @@
         </div>
         <div>
             <span>Last: </span>
-            <span class="last" id="xbt-last"><%- prices.xbtLast.slice(0, -3)  %></span>
+            <span class="last" id="xbt-last"><%- prices.xbt.last.slice(0, -3)  %></span>
             <span class="change" id="xbt-change"></span>
         </div>
         <div>
             <span>Low: </span>
-            <span id="xbt-low"><%- prices.xbtLow.slice(0, -3)  %></span> 
+            <span id="xbt-low"><%- prices.xbt.low.slice(0, -3)  %></span> 
         </div>
         <div>
             <span>High: </span>
-            <span id="xbt-high"><%- prices.xbtHigh.slice(0, -3)  %></span> 
+            <span id="xbt-high"><%- prices.xbt.high.slice(0, -3)  %></span> 
         </div>
     </section>
 
     <form class="target-form" id="max-target-xbt" data-target='gt' data-currency="xbt">
         <label>Let me know if the price goes <strong>above</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))+200  %>' name='targetValue' />
+        <input type='number' value='<%- Math.floor(parseInt(prices.xbt.last))+200  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
     </form>
     
     <form class="target-form" id="min-target-xbt" data-target='lt' data-currency="xbt">
         <label>Let me know if the price goes <strong>below</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.xbtLast))-200  %>' name='targetValue' />
+        <input type='number' value='<%- Math.floor(parseInt(prices.xbt.last))-200  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
     </form>
 
@@ -223,30 +223,49 @@
         </div>
         <div>
             <span>Last: </span>
-            <span class="last" id="bch-last"><%- prices.bchLast.slice(0, -3)  %></span>
+            <span class="last" id="bch-last"><%- prices.bch.last.slice(0, -3)  %></span>
             <span class="change" id="bch-change"></span>
         </div>
         <div>
             <span>Low: </span>
-            <span id="bch-low"><%- prices.bchLow.slice(0, -3)  %></span> 
+            <span id="bch-low"><%- prices.bch.low.slice(0, -3)  %></span> 
         </div>
         <div>
             <span>High: </span>
-            <span id="bch-high"><%- prices.bchHigh.slice(0, -3)  %></span> 
+            <span id="bch-high"><%- prices.bch.high.slice(0, -3)  %></span> 
         </div>
     </section>
     
     <form class="target-form" id="max-target-bch" data-target='gt' data-currency="bch">
         <label>Let me know if the price goes <strong>above</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.bchLast))+100  %>' name='targetValue' />
+        <input type='number' value='<%- Math.floor(parseInt(prices.bch.last))+50  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
     </form>
     
     <form class="target-form" id="min-target-bch" data-target='lt' data-currency="bch">
         <label>Let me know if the price goes <strong>below</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.bchLast))-100  %>' name='targetValue' />
+        <input type='number' value='<%- Math.floor(parseInt(prices.bch.last))-50  %>' name='targetValue' />
         <button type='submit' id='subscription'>Notify me</button>
     </form>
+
+    <section class="eth">
+        <div>
+            <h2>E T H</h2>
+        </div>
+        <div>
+            <span>Last: </span>
+            <span class="last" id="eth-last"><%- prices.eth.last.slice(0, -3)  %></span>
+            <span class="change" id="eth-change"></span>
+        </div>
+        <div>
+            <span>Low: </span>
+            <span id="eth-low"><%- prices.eth.low.slice(0, -3)  %></span> 
+        </div>
+        <div>
+            <span>High: </span>
+            <span id="eth-high"><%- prices.eth.high.slice(0, -3)  %></span> 
+        </div>
+    </section>
 
     <p id="time"><%- prices.time  %></p>
 
@@ -337,27 +356,31 @@
             fetch('/current').then(response => response.json())
             .then( prices => {
                 
-                document.querySelector('#xbt-last').innerHTML = prices.xbtLast.slice(0, -3);
-                document.querySelector('#xbt-change').innerHTML = prices.xbtChange > 0 ? '+' + prices.xbtChange : prices.xbtChange;
-                document.querySelector('#xbt-high').innerHTML = prices.xbtHigh.slice(0, -3);
-                document.querySelector('#xbt-low').innerHTML = prices.xbtLow.slice(0, -3);
-                document.querySelector('#bch-last').innerHTML = prices.bchLast.slice(0, -3);
-                document.querySelector('#bch-change').innerHTML = prices.bchChange > 0 ? '+' + prices.bchChange : prices.bchChange;
-                document.querySelector('#bch-high').innerHTML = prices.bchHigh.slice(0, -3);
-                document.querySelector('#bch-low').innerHTML = prices.bchLow.slice(0, -3);
+                document.querySelector('#xbt-last').innerHTML = prices.xbt.last.slice(0, -3);
+                document.querySelector('#xbt-change').innerHTML = prices.xbt.change > 0 ? '+' + prices.xbt.change : prices.xbt.change;
+                document.querySelector('#xbt-high').innerHTML = prices.xbt.high.slice(0, -3);
+                document.querySelector('#xbt-low').innerHTML = prices.xbt.low.slice(0, -3);
+                document.querySelector('#bch-last').innerHTML = prices.bch.last.slice(0, -3);
+                document.querySelector('#bch-change').innerHTML = prices.bch.change > 0 ? '+' + prices.bch.change : prices.bch.change;
+                document.querySelector('#bch-high').innerHTML = prices.bch.high.slice(0, -3);
+                document.querySelector('#bch-low').innerHTML = prices.bch.low.slice(0, -3);
+                document.querySelector('#eth-last').innerHTML = prices.eth.last.slice(0, -3);
+                document.querySelector('#eth-change').innerHTML = prices.eth.change > 0 ? '+' + prices.eth.change : prices.eth.change;
+                document.querySelector('#eth-high').innerHTML = prices.eth.high.slice(0, -3);
+                document.querySelector('#eth-low').innerHTML = prices.eth.low.slice(0, -3);
                 document.querySelector('#time').innerHTML = prices.time;
 
-                document.title = `XBT: ${prices.xbtLast.slice(0, -3)} | BCH: ${prices.bchLast.slice(0, -3)}`
+                document.title = `XBT: ${prices.xbt.last.slice(0, -3)} | BCH: ${prices.bch.last.slice(0, -3)}`;
 
                 // Work out xbt class to add from price change
                 let xbtClassToAdd = '';
-                if (prices.xbtChange <= -priceThreshold.large){
+                if (prices.xbt.change <= -priceThreshold.large){
                     xbtClassToAdd = 'decrease--2'
-                } else if (prices.xbtChange <= -priceThreshold.small){
+                } else if (prices.xbt.change <= -priceThreshold.small){
                     xbtClassToAdd = 'decrease--1'
-                } else if (prices.xbtChange >= priceThreshold.large){
+                } else if (prices.xbt.change >= priceThreshold.large){
                     xbtClassToAdd = 'increase--2'
-                } else if (prices.xbtChange >= priceThreshold.small){
+                } else if (prices.xbt.change >= priceThreshold.small){
                     xbtClassToAdd = 'increase--1'
                 } 
                 // Add or remove classes to reflect price change
@@ -367,17 +390,16 @@
                     document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
                     document.querySelector('html').classList.add(xbtClassToAdd);
                 }
-                
 
                 // Work out bch class to add from price change
                 let bchClassToAdd = '';
-                if (prices.bchChange <= -priceThreshold.large){
+                if (prices.bch.change <= -priceThreshold.large){
                     bchClassToAdd = 'decrease--2'
-                } else if (prices.bchChange <= -priceThreshold.small){
+                } else if (prices.bch.change <= -priceThreshold.small){
                     bchClassToAdd = 'decrease--1'
-                } else if (prices.bchChange >= priceThreshold.large){
+                } else if (prices.bch.change >= priceThreshold.large){
                     bchClassToAdd = 'increase--2'
-                } else if (prices.bchChange >= priceThreshold.small){
+                } else if (prices.bch.change >= priceThreshold.small){
                     bchClassToAdd = 'increase--1'
                 } 
                 // Add or remove classes to reflect price change
@@ -390,10 +412,6 @@
                     
         }
         let inty = setInterval(updatePrices, 8000);
-
-
-
-
 
         // Convert and include  public vapid key
         function urlBase64ToUint8Array(base64String) {
