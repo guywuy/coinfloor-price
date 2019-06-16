@@ -217,37 +217,6 @@
         <button type='submit' id='subscription'>Notify me</button>
     </form>
 
-    <section class="bch">
-        <div>
-            <h2>B C H</h2>
-        </div>
-        <div>
-            <span>Last: </span>
-            <span class="last" id="bch-last"><%- prices.bch.last.slice(0, -3)  %></span>
-            <span class="change" id="bch-change"></span>
-        </div>
-        <div>
-            <span>Low: </span>
-            <span id="bch-low"><%- prices.bch.low.slice(0, -3)  %></span> 
-        </div>
-        <div>
-            <span>High: </span>
-            <span id="bch-high"><%- prices.bch.high.slice(0, -3)  %></span> 
-        </div>
-    </section>
-    
-    <form class="target-form" id="max-target-bch" data-target='gt' data-currency="bch">
-        <label>Let me know if the price goes <strong>above</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.bch.last))+50  %>' name='targetValue' />
-        <button type='submit' id='subscription'>Notify me</button>
-    </form>
-    
-    <form class="target-form" id="min-target-bch" data-target='lt' data-currency="bch">
-        <label>Let me know if the price goes <strong>below</strong></label>
-        <input type='number' value='<%- Math.floor(parseInt(prices.bch.last))-50  %>' name='targetValue' />
-        <button type='submit' id='subscription'>Notify me</button>
-    </form>
-
     <section class="eth">
         <div>
             <h2>E T H</h2>
@@ -360,17 +329,13 @@
                 document.querySelector('#xbt-change').innerHTML = prices.xbt.change > 0 ? '+' + prices.xbt.change : prices.xbt.change;
                 document.querySelector('#xbt-high').innerHTML = prices.xbt.high.slice(0, -3);
                 document.querySelector('#xbt-low').innerHTML = prices.xbt.low.slice(0, -3);
-                document.querySelector('#bch-last').innerHTML = prices.bch.last.slice(0, -3);
-                document.querySelector('#bch-change').innerHTML = prices.bch.change > 0 ? '+' + prices.bch.change : prices.bch.change;
-                document.querySelector('#bch-high').innerHTML = prices.bch.high.slice(0, -3);
-                document.querySelector('#bch-low').innerHTML = prices.bch.low.slice(0, -3);
                 document.querySelector('#eth-last').innerHTML = prices.eth.last.slice(0, -3);
                 document.querySelector('#eth-change').innerHTML = prices.eth.change > 0 ? '+' + prices.eth.change : prices.eth.change;
                 document.querySelector('#eth-high').innerHTML = prices.eth.high.slice(0, -3);
                 document.querySelector('#eth-low').innerHTML = prices.eth.low.slice(0, -3);
                 document.querySelector('#time').innerHTML = prices.time;
 
-                document.title = `XBT: ${prices.xbt.last.slice(0, -3)} | BCH: ${prices.bch.last.slice(0, -3)}`;
+                document.title = `XBT: ${prices.xbt.last.slice(0, -3)}`;
 
                 // Work out xbt class to add from price change
                 let xbtClassToAdd = '';
@@ -389,23 +354,6 @@
                 if (xbtClassToAdd.length>0){
                     document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
                     document.querySelector('html').classList.add(xbtClassToAdd);
-                }
-
-                // Work out bch class to add from price change
-                let bchClassToAdd = '';
-                if (prices.bch.change <= -priceThreshold.large){
-                    bchClassToAdd = 'decrease--2'
-                } else if (prices.bch.change <= -priceThreshold.small){
-                    bchClassToAdd = 'decrease--1'
-                } else if (prices.bch.change >= priceThreshold.large){
-                    bchClassToAdd = 'increase--2'
-                } else if (prices.bch.change >= priceThreshold.small){
-                    bchClassToAdd = 'increase--1'
-                } 
-                // Add or remove classes to reflect price change
-                document.querySelector('#bch-change').classList.remove("increase--1", "increase--2", "decrease--1", "decrease--2");
-                if (bchClassToAdd.length>0){
-                    document.querySelector('#bch-change').classList.add(bchClassToAdd);
                 }
             })
             .catch((err) => console.log(err));

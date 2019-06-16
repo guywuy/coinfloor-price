@@ -67,12 +67,6 @@ var prices = {
         high: '...',
         change: 0,
     },
-    bch: {
-        last: '...',
-        low: '...',
-        high: '...',
-        change: 0,
-    },
     eth: {
         last: '...',
         low: '...',
@@ -88,10 +82,6 @@ var previousValues = {
         previous: 0,
         changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
-    bch: {
-        previous: 0,
-        changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    },
     eth: {
         previous: 0,
         changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -101,7 +91,7 @@ var previousValues = {
 
 function updateVals(){
 
-    let currencies = ['xbt', 'bch', 'eth'];
+    let currencies = ['xbt', 'eth'];
     currencies.forEach(function(currency) {
 
         let getOptions = {
@@ -180,7 +170,7 @@ function findMatchingSubscriptions(){
 
     const currPrices = {
         xbt : prices.xbt.last,
-        bch : prices.bch.last
+        eth : prices.eth.last
     };
     const now = new Date();
     const formattedTime =`${now.getHours()}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`;
