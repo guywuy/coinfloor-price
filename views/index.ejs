@@ -117,6 +117,9 @@
         content: '▼▼';
         font-size: 20px;
     }
+    .expired {
+        opacity: 0.5;
+    }
 
     form{
         margin-bottom: 0.8em;
@@ -184,7 +187,9 @@
 </style>    
 </head>
 
-<body>
+<body class="expired">
+
+    <p id="time"><%- prices.time %></p>
 
     <section class="xbt">
         <div>
@@ -235,11 +240,6 @@
             <span id="eth-high"><%- prices.eth.high.slice(0, -3)  %></span> 
         </div>
     </section>
-
-    <p id="time"><%- prices.time  %></p>
-
-    
-
 
     <script>
 
@@ -333,6 +333,7 @@
                 document.querySelector('#eth-change').innerHTML = prices.eth.change > 0 ? '+' + prices.eth.change : prices.eth.change;
                 document.querySelector('#eth-high').innerHTML = prices.eth.high.slice(0, -3);
                 document.querySelector('#eth-low').innerHTML = prices.eth.low.slice(0, -3);
+                
                 document.querySelector('#time').innerHTML = prices.time;
 
                 document.title = `XBT: ${prices.xbt.last.slice(0, -3)}`;
@@ -355,6 +356,8 @@
                     document.querySelector('#xbt-change').classList.add(xbtClassToAdd);
                     document.querySelector('html').classList.add(xbtClassToAdd);
                 }
+
+                document.querySelector('body').classList.remove('expired');
             })
             .catch((err) => console.log(err));
                     
