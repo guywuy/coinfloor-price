@@ -222,25 +222,6 @@
         <button type='submit' id='subscription'>Notify me</button>
     </form>
 
-    <section class="eth">
-        <div>
-            <h2>E T H</h2>
-        </div>
-        <div>
-            <span>Last: </span>
-            <span class="last" id="eth-last"><%- prices.eth.last.slice(0, -3)  %></span>
-            <span class="change" id="eth-change"></span>
-        </div>
-        <div>
-            <span>Low: </span>
-            <span id="eth-low"><%- prices.eth.low.slice(0, -3)  %></span> 
-        </div>
-        <div>
-            <span>High: </span>
-            <span id="eth-high"><%- prices.eth.high.slice(0, -3)  %></span> 
-        </div>
-    </section>
-
     <script>
 
         const priceThreshold = {
@@ -329,11 +310,6 @@
                 document.querySelector('#xbt-change').innerHTML = prices.xbt.change > 0 ? '+' + prices.xbt.change : prices.xbt.change;
                 document.querySelector('#xbt-high').innerHTML = prices.xbt.high.slice(0, -3);
                 document.querySelector('#xbt-low').innerHTML = prices.xbt.low.slice(0, -3);
-                document.querySelector('#eth-last').innerHTML = prices.eth.last.slice(0, -3);
-                document.querySelector('#eth-change').innerHTML = prices.eth.change > 0 ? '+' + prices.eth.change : prices.eth.change;
-                document.querySelector('#eth-high').innerHTML = prices.eth.high.slice(0, -3);
-                document.querySelector('#eth-low').innerHTML = prices.eth.low.slice(0, -3);
-                
                 document.querySelector('#time').innerHTML = prices.time;
 
                 document.title = `XBT: ${prices.xbt.last.slice(0, -3)}`;

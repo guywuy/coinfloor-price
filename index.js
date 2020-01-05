@@ -1,7 +1,4 @@
 const https = require('https');
-const ejs = require('ejs');
-const fs = require('fs');
-const os = require('os');
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -67,12 +64,6 @@ var prices = {
         high: '...',
         change: 0,
     },
-    eth: {
-        last: '...',
-        low: '...',
-        high: '...',
-        change: 0,
-    },
     'time': Date.now()
 }
 
@@ -82,16 +73,12 @@ var previousValues = {
         previous: 0,
         changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
-    eth: {
-        previous: 0,
-        changes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    },
 }
 
 
 function updateVals(){
 
-    let currencies = ['xbt', 'eth'];
+    let currencies = ['xbt'];
     currencies.forEach(function(currency) {
 
         let getOptions = {
@@ -170,7 +157,6 @@ function findMatchingSubscriptions(){
 
     const currPrices = {
         xbt : prices.xbt.last,
-        eth : prices.eth.last
     };
     const now = new Date();
     const formattedTime =`${now.getHours()}:${(now.getMinutes() < 10 ? '0' + now.getMinutes() : now.getMinutes())}`;
